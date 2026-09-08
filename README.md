@@ -49,9 +49,11 @@
                     前端交互路线图（地图为主、文字为辅）
 ```
 
-## 界面预览
+## 运行演示
 
 ![运行演示（2 倍速）](docs/demo.webp)
+
+界面截图：
 
 ![桌面端规划结果](docs/screenshots/desktop_full.png)
 
