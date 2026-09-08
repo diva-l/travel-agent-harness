@@ -14,3 +14,5 @@ artifacts/*.json
 frontend/node_modules/
 models/*
 !models/README.md
+
+eval_results/data/gold_selected.jsonl
