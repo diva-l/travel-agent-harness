@@ -31,8 +31,8 @@ HARNESS_ROOT = Path("/root/autodl-tmp/TravelAgentHarness")
 REWARD_PLUGIN = Path(
     "/root/autodl-tmp/travel_agentic_rl/ms-swift/examples/train/grpo/plugin/tooluse_reward_parser_aligned.py"
 )
-TEST_SET = HARNESS_ROOT / "eval_results" / "test_final.jsonl"
-OUT_DIR = HARNESS_ROOT / "eval_results"
+TEST_SET = HARNESS_ROOT / "eval_results" / "data" / "test_final.jsonl"
+OUT_DIR = HARNESS_ROOT / "eval_results" / "data"
 
 sys.path.insert(0, str(HARNESS_ROOT / "src"))
 

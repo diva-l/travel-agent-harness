@@ -46,11 +46,11 @@ serve_and_wait() {  # $1=model path  $2=log tag
 }
 
 run_eval() {  # $1=mode  $2=tag
-    rm -f /root/autodl-tmp/eval-$1.db eval_results/results_$1.jsonl
-    $V/python eval_results/run_eval.py --mode "$1" > "/tmp/eval-$2.log" 2>&1
+    rm -f /root/autodl-tmp/eval-$1.db eval_results/data/results_$1.jsonl
+    $V/python eval_results/scripts/run_eval.py --mode "$1" > "/tmp/eval-$2.log" 2>&1
     local rc=$?
     if [ "$1" != "$2" ]; then
-        [ -f eval_results/results_$1.jsonl ] && mv eval_results/results_$1.jsonl "eval_results/results_${1}_$2.jsonl"
+        [ -f eval_results/data/results_$1.jsonl ] && mv eval_results/data/results_$1.jsonl "eval_results/data/results_${1}_$2.jsonl"
         [ -f /root/autodl-tmp/eval-$1.db ] && mv /root/autodl-tmp/eval-$1.db "/root/autodl-tmp/eval-$1-$2.db"
     fi
     echo "[$2] eval exit=$rc"
@@ -62,5 +62,5 @@ echo "=== SFT ===";   serve_and_wait "$SFT"  sft   && run_eval vllm sft
 echo "=== RL150 ==="; serve_and_wait "$RL"   rl150 && run_eval vllm rl150
 echo "=== API (DeepSeek) ==="; pkill -f "vllm serve" 2>/dev/null; sleep 3; run_eval api api
 echo "=== RESTORE rl150 service ==="; serve_and_wait "$RL" rl150
-echo "=== COMPARE ==="; $V/python eval_results/compare_checkpoints.py > /tmp/compare.log 2>&1; echo "compare exit=$?"
+echo "=== COMPARE ==="; $V/python eval_results/scripts/compare_checkpoints.py > /tmp/compare.log 2>&1; echo "compare exit=$?"
 echo "PIPELINE DONE"

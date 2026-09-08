@@ -28,11 +28,11 @@ from datetime import date, timedelta
 from pathlib import Path
 
 spec = importlib.util.spec_from_file_location(
-    "load_test", "/root/autodl-tmp/TravelAgentHarness/eval_results/perf/load_test.py")
+    "load_test", "/root/autodl-tmp/TravelAgentHarness/eval_results/perf/scripts/load_test.py")
 lt = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(lt)
 
-OUT = Path("/root/autodl-tmp/TravelAgentHarness/eval_results/perf")
+OUT = Path("/root/autodl-tmp/TravelAgentHarness/eval_results/perf/data")
 API = "http://127.0.0.1:8765"
 TERMINAL = {"completed", "exhausted", "failed"}
 

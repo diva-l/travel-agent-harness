@@ -11,7 +11,7 @@ import json
 import sqlite3
 from pathlib import Path
 
-OUT = Path("/root/autodl-tmp/TravelAgentHarness/eval_results/perf")
+OUT = Path("/root/autodl-tmp/TravelAgentHarness/eval_results/perf/data")
 OUT.mkdir(parents=True, exist_ok=True)
 
 

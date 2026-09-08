@@ -11,16 +11,17 @@ from pathlib import Path
 
 import importlib.util
 spec = importlib.util.spec_from_file_location(
-    "summarize", "/root/autodl-tmp/TravelAgentHarness/eval_results/summarize.py")
+    "summarize", "/root/autodl-tmp/TravelAgentHarness/eval_results/scripts/summarize.py")
 summarize = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(summarize)
 
 OUT = Path("/root/autodl-tmp/TravelAgentHarness/eval_results")
+DATA = OUT / "data"
 SOURCES = {
-    "base": ("基座 Qwen3-4B（未微调）", OUT / "results_vllm_base.jsonl"),
-    "sft": ("SFT checkpoint-420", OUT / "results_vllm_sft.jsonl"),
-    "rl150": ("RL checkpoint-150（最终）", OUT / "results_vllm_rl150.jsonl"),
-    "api": ("DeepSeek（托管参照）", OUT / "results_api.jsonl"),
+    "base": ("基座 Qwen3-4B（未微调）", DATA / "results_vllm_base.jsonl"),
+    "sft": ("SFT checkpoint-420", DATA / "results_vllm_sft.jsonl"),
+    "rl150": ("RL checkpoint-150（最终）", DATA / "results_vllm_rl150.jsonl"),
+    "api": ("DeepSeek（托管参照）", DATA / "results_api.jsonl"),
 }
 
 

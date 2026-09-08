@@ -32,7 +32,7 @@ from travel_agent_harness.config import HarnessConfig, load_env_file  # noqa: E4
 from travel_agent_harness.harness import build_default_harness  # noqa: E402
 from travel_agent_harness.prompts import build_planner_system_prompt  # noqa: E402
 
-OUT = Path("/root/autodl-tmp/TravelAgentHarness/eval_results/perf")
+OUT = Path("/root/autodl-tmp/TravelAgentHarness/eval_results/perf/data")
 OUT.mkdir(parents=True, exist_ok=True)
 VLLM = "http://127.0.0.1:8000"
 
@@ -90,7 +90,7 @@ def vllm_metrics() -> dict[str, float]:
 
 
 def load_cases() -> list[dict]:
-    rows = [json.loads(l) for l in open(HARNESS_ROOT / "eval_results" / "test_final.jsonl", encoding="utf-8") if l.strip()]
+    rows = [json.loads(l) for l in open(HARNESS_ROOT / "eval_results" / "data" / "test_final.jsonl", encoding="utf-8") if l.strip()]
     rows.sort(key=lambda r: r["id"])
     return [rows[i] for i in range(0, len(rows), 8)][:10]
 

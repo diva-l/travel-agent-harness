@@ -154,7 +154,7 @@
 
 ## 评测结果
 
-测试集：[eval_results/test_final.jsonl](eval_results/test_final.jsonl) 80 条中确定性抽样 10 条（指纹 `b7d3c735…e0ef4303`）；工具链为真实外部 API（高德 + Firecrawl）；judge=deepseek-v4-flash；运行环境已全开训练对齐开关。脚本与逐条数据在 [eval_results/](eval_results/README.md)。
+测试集：[eval_results/data/test_final.jsonl](eval_results/data/test_final.jsonl) 80 条中确定性抽样 10 条（指纹 `b7d3c735…e0ef4303`）；工具链为真实外部 API（高德 + Firecrawl）；judge=deepseek-v4-flash；运行环境已全开训练对齐开关。脚本与逐条数据在 [eval_results/](eval_results/README.md)。
 
 ### 基座 → SFT → RL 四路对比（DeepSeek 作参照）
 
@@ -319,7 +319,7 @@ TRAVEL_HARNESS_FIRECRAWL_KEY=<your-key>
 ├── frontend/                   # Vue 3 + Vite + TypeScript 源码（改前端才需要 Node）
 ├── tests/                      # 84 个单元测试（unittest，无外部依赖）
 ├── evals/                      # CLI eval 固定用例
-├── eval_results/               # 评测/压测脚本 + 全部结果与报告
+├── eval_results/               # 评测/压测：报告在顶层，scripts/ 为可复跑脚本，data/ 为逐条数据
 ├── docs/                       # 部署、验证、并发、证据台账等文档 + 截图
 ├── models/                     # （打包为空）模型权重放置目录，见快速开始模式 B
 ├── .env.example                # 全部配置项注释

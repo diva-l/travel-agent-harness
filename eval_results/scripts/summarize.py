@@ -10,7 +10,7 @@ SUB_KEYS = ["process_step", "tool_schema", "answer_tag", "stage_aware", "tool_ef
 
 
 def load(mode: str) -> list[dict]:
-    return [json.loads(l) for l in open(OUT / f"results_{mode}.jsonl", encoding="utf-8") if l.strip()]
+    return [json.loads(l) for l in open(OUT / "data" / f"results_{mode}.jsonl", encoding="utf-8") if l.strip()]
 
 
 def mean(values):
@@ -45,7 +45,7 @@ def main() -> None:
     for mode in ("vllm", "api"):
         records = load(mode)
         summary[mode] = aggregate(records)
-    (OUT / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
+    (OUT / "data" / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
 
     lines = ["# 评测报告：checkpoint-150 (vLLM) vs DeepSeek 基线", ""]
     lines.append("- 测试集：`test_final.jsonl` 确定性抽样 10/80（按 id 排序每隔 8 条）")
