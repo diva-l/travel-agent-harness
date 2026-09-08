@@ -183,6 +183,8 @@
 
 必需工具覆盖率追平 DeepSeek，过程奖励混合分与 judge 分反超。逐条明细与复跑脚本：[eval_results/](eval_results/README.md)。
 
+评测的打分层是开放接口：`run_eval.py --scorer your_scorer.py` 可接入任意实现了 `score(messages) -> float` 的打分器复测（接口示例见 [example_scorer.py](eval_results/scripts/example_scorer.py)）；上表的过程奖励混合分由与训练同源的 scorer 产出。
+
 ### 工程压测（2026-09-08）
 
 | 结论 | 数据 |
