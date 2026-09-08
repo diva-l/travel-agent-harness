@@ -1,12 +1,24 @@
-# TravelAgentHarness — 受限、可追溯、可评测的出行规划 Agent Harness
+<p align="center">
+  <img src="docs/hero.svg" alt="TravelAgentHarness — 受限、可追溯、可评测的出行规划 Agent Harness" width="100%">
+</p>
 
-> 一个真正可使用的出行规划 Agent：Agentic RL 训练的 Planner（Qwen3-4B）在受约束的工具循环里
-> 查天气、搜地点、比车次、算路线，产出有证据支撑的逐日行程；Harness 负责边界控制、Schema 校验、
-> Checkpoint、Trace 与人工审批，前端把结果渲染成可交互路线图。
+<p align="center">
+  <a href="tests/"><img src="https://img.shields.io/badge/tests-84%20passed-brightgreen" alt="tests"></a>
+  <a href="pyproject.toml"><img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="python"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a>
+</p>
 
-[![tests](https://img.shields.io/badge/tests-84%20passed-brightgreen)](tests/)
-[![python](https://img.shields.io/badge/python-3.11%2B-blue)](pyproject.toml)
-[![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+<p align="center">
+  <a href="#快速开始">快速开始</a> ·
+  <a href="#评测结果">评测结果</a> ·
+  <a href="eval_results/perf/perf_report.md">压测报告</a> ·
+  <a href="#文档索引">文档</a>
+</p>
+
+**30 秒速览**：Agentic RL 训练的 Qwen3-4B Planner 在受约束的工具循环里查天气、搜地点、比车次、算路线，
+产出有证据支撑的逐日行程；Harness 负责边界控制、Schema 校验、Checkpoint、Trace 与人工审批。
+RL 模型在 10 条确定性抽样的真实 API 评测中**打平 DeepSeek**（必需工具覆盖率 0.775），
+HTTP 路径压测 **645 任务/时**。一个反直觉发现：评测环境不对齐训练分布时，会出现「基座 > RL」的假象。
 
 ## 界面预览
 
@@ -15,6 +27,41 @@
 | ![桌面端规划结果](docs/screenshots/desktop_full.png) | ![移动端路线视图](docs/screenshots/mobile_full.png) |
 
 更多截图见 [docs/screenshots/](docs/screenshots/)。
+
+## 评测结果
+
+测试集：[eval_results/test_final.jsonl](eval_results/test_final.jsonl) 80 条中确定性抽样 10 条
+（指纹 `b7d3c735…e0ef4303`）；工具链为真实外部 API；judge=deepseek-v4-flash；
+运行环境已全开训练对齐开关。脚本与逐条数据在 [eval_results/](eval_results/README.md)。
+
+### 基座 → SFT → RL 四路对比（DeepSeek 作参照）
+
+| 指标 | 基座 Qwen3-4B | SFT ckpt-420 | **RL ckpt-150** | DeepSeek |
+|---|---:|---:|---:|---:|
+| 完成率 | 1.0 | 0.8 | 0.9 | 0.9 |
+| 必需工具覆盖率 | 0.65 | 0.69 | **0.775** | **0.775** |
+| 工具错误率 | 0.02 | 0.34 | 0.12 | 0.05 |
+| 重复调用阻断 | 0 | 12 | **1** | 0 |
+| RL 混合分（phase3） | 0.419 | 0.223 | **0.480** | 0.461 |
+| LLM judge | 0.48 | 0.27 | **0.60** | 0.57 |
+
+**RL-150 是最强本地模型**，与训练侧 80 条 judge 结论一致；未对齐 harness 时曾出现
+「基座 > RL」的假象，证实评测环境对齐训练分布的必要性。逐条明细：
+[eval_results/compare_report.md](eval_results/compare_report.md)。
+
+### 工程压测（对齐版，2026-09-08）
+
+| 结论 | 数据 |
+|---|---|
+| 模型不是瓶颈 | 裸 vLLM c8 首轮 2.3s / 6101 tok/s；Agent 循环下 GPU 均值仅 12~24% |
+| 瓶颈在外部工具链 | 工具耗时为模型的 6~9 倍（含训练同款 LLM 模拟器往返） |
+| Harness 开销 ≈ 0 | 逐任务「墙钟 − 模型 − 工具」均值 -11%~+0.7% |
+| 并发甜区 | c4 吞吐见顶 128 任务/时；HTTP 路径 worker=16 时 **645 任务/时、排队 ~3s**（worker=2 时 42.6/h、排队 286s，15×） |
+| 护栏有效 | schema-echo 场均拦截 0.6 次全部自愈；重复阻断/强制收尾/作答机会按训练契约触发 |
+| Prefix cache | 命中率 87.3%，多轮 prefill 的主要减压阀 |
+
+完整报告：[eval_results/perf/perf_report.md](eval_results/perf/perf_report.md)
+（对齐前旧版归档于 `eval_results/perf/archive_20260906/`）。
 
 ## 这是什么
 
@@ -133,41 +180,6 @@ TRAVEL_HARNESS_PLANNER_MODE=vllm    # 自动填入 tagged 协议、base_url、�
 ```
 
 无 GPU 时默认 `PLANNER_MODE=api` 直连 DeepSeek 等托管 API，同样可跑全链路。
-
-## 评测结果
-
-测试集：[eval_results/test_final.jsonl](eval_results/test_final.jsonl) 80 条中确定性抽样 10 条
-（指纹 `b7d3c735…e0ef4303`）；工具链为真实外部 API；judge=deepseek-v4-flash；
-运行环境已全开训练对齐开关。脚本与逐条数据在 [eval_results/](eval_results/README.md)。
-
-### 基座 → SFT → RL 四路对比（DeepSeek 作参照）
-
-| 指标 | 基座 Qwen3-4B | SFT ckpt-420 | **RL ckpt-150** | DeepSeek |
-|---|---:|---:|---:|---:|
-| 完成率 | 1.0 | 0.8 | 0.9 | 0.9 |
-| 必需工具覆盖率 | 0.65 | 0.69 | **0.775** | **0.775** |
-| 工具错误率 | 0.02 | 0.34 | 0.12 | 0.05 |
-| 重复调用阻断 | 0 | 12 | **1** | 0 |
-| RL 混合分（phase3） | 0.419 | 0.223 | **0.480** | 0.461 |
-| LLM judge | 0.48 | 0.27 | **0.60** | 0.57 |
-
-**RL-150 是最强本地模型**，与训练侧 80 条 judge 结论一致；未对齐 harness 时曾出现
-「基座 > RL」的假象，证实评测环境对齐训练分布的必要性。逐条明细：
-[eval_results/compare_report.md](eval_results/compare_report.md)。
-
-### 工程压测（对齐版，2026-09-08）
-
-| 结论 | 数据 |
-|---|---|
-| 模型不是瓶颈 | 裸 vLLM c8 首轮 2.3s / 6101 tok/s；Agent 循环下 GPU 均值仅 12~24% |
-| 瓶颈在外部工具链 | 工具耗时为模型的 6~9 倍（含训练同款 LLM 模拟器往返） |
-| Harness 开销 ≈ 0 | 逐任务「墙钟 − 模型 − 工具」均值 -11%~+0.7% |
-| 并发甜区 | c4 吞吐见顶 128 任务/时；HTTP 路径 worker=16 时 **645 任务/时、排队 ~3s**（worker=2 时 42.6/h、排队 286s，15×） |
-| 护栏有效 | schema-echo 场均拦截 0.6 次全部自愈；重复阻断/强制收尾/作答机会按训练契约触发 |
-| Prefix cache | 命中率 87.3%，多轮 prefill 的主要减压阀 |
-
-完整报告：[eval_results/perf/perf_report.md](eval_results/perf/perf_report.md)
-（对齐前旧版归档于 `eval_results/perf/archive_20260906/`）。
 
 ## 仓库结构
 

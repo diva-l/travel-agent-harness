@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 390" role="img" aria-labelledby="hero-title hero-desc">
+  <title id="hero-title">TravelAgentHarness — 受限、可追溯、可评测的出行规划 Agent Harness</title>
+  <desc id="hero-desc">左侧为项目名与一句话简介，右侧为一次真实运行时 Trace 的示意：RL Planner 在预算约束下循环调用工具，带 checkpoint 与证据门禁。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#58A6FF"/>
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#3FB950"/>
+    </marker>
+  </defs>
+
+  <!-- complete background: readable on both GitHub themes -->
+  <rect width="1200" height="390" fill="#0D1117"/>
+  <rect x="0.5" y="0.5" width="1199" height="389" fill="none" stroke="#21262D"/>
+
+  <!-- ===== left: identity ===== -->
+  <text x="64" y="80" font-family="ui-monospace, SFMono-Regular, 'Cascadia Code', Consolas, monospace" font-size="18" letter-spacing="2" fill="#8B949E">AGENT RUNTIME HARNESS · AGENTIC RL EVALUATION</text>
+
+  <text x="64" y="148" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="56" font-weight="700" fill="#E6EDF3">TravelAgentHarness</text>
+
+  <text x="64" y="200" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="22" fill="#C9D1D9">受限、可追溯、可评测的出行规划 Agent Harness</text>
+  <text x="64" y="234" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="22" fill="#8B949E">Qwen3-4B RL Planner × 有界工具循环 × 全量 Trace</text>
+
+  <text x="64" y="296" font-family="ui-monospace, SFMono-Regular, 'Cascadia Code', Consolas, monospace" font-size="16" fill="#8B949E">84 tests passed · Python 3.11+ · FastAPI + Vue 3 · MIT</text>
+
+  <!-- journey route motif -->
+  <line x1="64" y1="346" x2="1136" y2="346" stroke="#484F58" stroke-width="2" stroke-dasharray="8 8"/>
+  <circle cx="64" cy="346" r="6" fill="#F78166"/>
+  <circle cx="420" cy="346" r="5" fill="#0D1117" stroke="#58A6FF" stroke-width="2"/>
+  <circle cx="780" cy="346" r="5" fill="#0D1117" stroke="#58A6FF" stroke-width="2"/>
+  <circle cx="1136" cy="346" r="6" fill="#3FB950"/>
+  <text x="64" y="374" font-family="ui-monospace, SFMono-Regular, 'Cascadia Code', Consolas, monospace" font-size="16" fill="#8B949E" text-anchor="middle">D1</text>
+  <text x="420" y="374" font-family="ui-monospace, SFMono-Regular, 'Cascadia Code', Consolas, monospace" font-size="16" fill="#8B949E" text-anchor="middle">D2</text>
+  <text x="780" y="374" font-family="ui-monospace, SFMono-Regular, 'Cascadia Code', Consolas, monospace" font-size="16" fill="#8B949E" text-anchor="middle">D3</text>
+  <text x="1136" y="374" font-family="ui-monospace, SFMono-Regular, 'Cascadia Code', Consolas, monospace" font-size="16" fill="#8B949E" text-anchor="middle">D4</text>
+
+  <!-- ===== right: runtime trace panel (real project material) ===== -->
+  <rect x="720" y="56" width="416" height="258" rx="10" fill="#161B22" stroke="#30363D"/>
+
+  <text x="744" y="86" font-family="ui-monospace, SFMono-Regular, 'Cascadia Code', Consolas, monospace" font-size="16" fill="#8B949E">RUNTIME TRACE</text>
+  <text x="1120" y="86" font-family="ui-monospace, SFMono-Regular, 'Cascadia Code', Consolas, monospace" font-size="16" fill="#8B949E" text-anchor="end">task 7f3a9c</text>
+
+  <!-- planner node -->
+  <rect x="744" y="102" width="112" height="34" rx="8" fill="none" stroke="#F78166" stroke-width="2"/>
+  <text x="800" y="125" font-family="ui-monospace, SFMono-Regular, 'Cascadia Code', Consolas, monospace" font-size="18" fill="#F78166" text-anchor="middle">Planner</text>
+
+  <!-- tool chips -->
+  <rect x="886" y="102" width="234" height="30" rx="6" fill="#21262D"/>
+  <text x="898" y="122" font-family="ui-monospace, SFMono-Regular, 'Cascadia Code', Consolas, monospace" font-size="16" fill="#C9D1D9">weather_search</text>
+  <text x="1108" y="122" font-family="ui-monospace, SFMono-Regular, 'Cascadia Code', Consolas, monospace" font-size="16" fill="#3FB950" text-anchor="end">✓</text>
+
+  <rect x="886" y="140" width="234" height="30" rx="6" fill="#21262D"/>
+  <text x="898" y="160" font-family="ui-monospace, SFMono-Regular, 'Cascadia Code', Consolas, monospace" font-size="16" fill="#C9D1D9">train_tickets_search</text>
+  <text x="1108" y="160" font-family="ui-monospace, SFMono-Regular, 'Cascadia Code', Consolas, monospace" font-size="16" fill="#3FB950" text-anchor="end">✓</text>
+
+  <rect x="886" y="178" width="234" height="30" rx="6" fill="#21262D"/>
+  <text x="898" y="198" font-family="ui-monospace, SFMono-Regular, 'Cascadia Code', Consolas, monospace" font-size="16" fill="#C9D1D9">route_planning</text>
+  <text x="1108" y="198" font-family="ui-monospace, SFMono-Regular, 'Cascadia Code', Consolas, monospace" font-size="16" fill="#3FB950" text-anchor="end">✓</text>
+
+  <!-- call bus: planner -> tools -->
+  <path d="M 856 119 L 870 119 L 870 193 L 884 193" fill="none" stroke="#58A6FF" stroke-width="2" marker-end="url(#arrow)"/>
+  <path d="M 870 155 L 884 155" fill="none" stroke="#58A6FF" stroke-width="2" marker-end="url(#arrow)"/>
+  <path d="M 870 119 L 884 117" fill="none" stroke="#58A6FF" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- observation return: tools -> planner -->
+  <path d="M 870 193 L 870 222 L 800 222 L 800 140" fill="none" stroke="#3FB950" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrow-green)"/>
+  <text x="836" y="216" font-family="ui-monospace, SFMono-Regular, 'Cascadia Code', Consolas, monospace" font-size="16" fill="#3FB950" text-anchor="middle">obs</text>
+
+  <!-- evidence gate + checkpoints -->
+  <text x="1120" y="246" font-family="ui-monospace, SFMono-Regular, 'Cascadia Code', Consolas, monospace" font-size="16" fill="#3FB950" text-anchor="end">✓ evidence gate</text>
+  <path d="M 750 240 l 7 7 l -7 7 l -7 -7 z" fill="#58A6FF"/>
+  <path d="M 778 240 l 7 7 l -7 7 l -7 -7 z" fill="#58A6FF"/>
+  <path d="M 806 240 l 7 7 l -7 7 l -7 -7 z" fill="#58A6FF"/>
+  <path d="M 834 240 l 7 7 l -7 7 l -7 -7 z" fill="none" stroke="#58A6FF" stroke-width="1.5"/>
+  <text x="852" y="252" font-family="ui-monospace, SFMono-Regular, 'Cascadia Code', Consolas, monospace" font-size="16" fill="#8B949E">checkpoints</text>
+
+  <!-- budget bar: steps 10/13, tokens 18.2k/24k -->
+  <text x="744" y="282" font-family="ui-monospace, SFMono-Regular, 'Cascadia Code', Consolas, monospace" font-size="16" fill="#8B949E">steps 10/13 · tokens 18.2k/24k</text>
+  <rect x="744" y="290" width="376" height="10" rx="5" fill="#30363D"/>
+  <rect x="744" y="290" width="289" height="10" rx="5" fill="#3FB950"/>
+</svg>
