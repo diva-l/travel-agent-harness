@@ -5,12 +5,13 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-OUT = Path("/root/autodl-tmp/TravelAgentHarness/eval_results")
+OUT = Path(__file__).resolve().parents[1]
 SUB_KEYS = ["process_step", "tool_schema", "answer_tag", "stage_aware", "tool_efficiency", "llm_judge"]
+FILES = {"vllm": "results_vllm_rl150.jsonl", "api": "results_api.jsonl"}
 
 
 def load(mode: str) -> list[dict]:
-    return [json.loads(l) for l in open(OUT / "data" / f"results_{mode}.jsonl", encoding="utf-8") if l.strip()]
+    return [json.loads(l) for l in open(OUT / "data" / FILES[mode], encoding="utf-8") if l.strip()]
 
 
 def mean(values):
@@ -44,20 +45,23 @@ def main() -> None:
     summary = {}
     for mode in ("vllm", "api"):
         records = load(mode)
-        summary[mode] = aggregate(records)
+        agg = aggregate(records)
+        # Do not publish the reward decomposition: keep the mixed score and
+        # the judge mean only.
+        agg["llm_judge_mean"] = agg.pop("rl_sub_means")["llm_judge"]
+        agg["rl_mixed_mean"] = agg.pop("rl_mixed_phase3_mean")
+        summary[mode] = agg
     (OUT / "data" / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    lines = ["# 评测报告：Voyager-4B (vLLM) vs DeepSeek 基线", ""]
-    lines.append("- 测试集：`test_final.jsonl` 确定性抽样 10/80（按 id 排序每隔 8 条）")
+    lines = ["# 评测报告：Voyager-4B vs DeepSeek（同一 Harness、同一真实工具链）", ""]
+    lines.append("- 测试集：`data/test_final.jsonl` 确定性抽样 10/80（按 id 排序每隔 8 条）")
     lines.append("- 数据集指纹（sha256）：`b7d3c735c13f92328aa0bf246d0649e4a1f8cfac6fcc187281775622e0ef4303`")
     lines.append("- 工具链：高德 Web 服务（真实） + Firecrawl（真实检索）")
-    lines.append("- RL 分数：训练侧 parser-aligned 六项子 reward 原代码复算，课程第 3 阶段权重 "
-                 "[process 0.05, schema 0.07, answer_tag 0.03, stage 0.05, efficiency 0.10, llm_judge 0.70]")
-    lines.append("- LLM judge：deepseek-v4-flash，对照测试集 gold answer（judge 提示词与训练侧一致）")
+    lines.append("- 分数：训练侧过程奖励混合分（训练同款评测代码复算）+ LLM judge（deepseek-v4-flash，对照测试集 gold answer）")
     lines.append("")
     lines.append("## 总览")
     lines.append("")
-    lines.append("| 指标 | vLLM (Voyager-4B) | DeepSeek (api) |")
+    lines.append("| 指标 | Voyager-4B (vLLM) | DeepSeek (api) |")
     lines.append("|---|---:|---:|")
     labels = {
         "completion_rate": "完成率",
@@ -65,26 +69,20 @@ def main() -> None:
         "tool_error_rate": "工具错误率",
         "mean_steps": "平均模型轮次",
         "mean_tool_calls": "平均工具调用数",
-        "mean_tokens": "平均 Token",
+        "mean_tokens": "平均 Token（累计）",
         "mean_elapsed_seconds": "平均耗时（秒）",
         "total_repeat_blocks": "重复调用阻断次数",
         "total_validation_errors": "Schema 校验错误数",
-        "rl_mixed_phase3_mean": "RL 混合分（phase3 权重）",
+        "rl_mixed_mean": "过程奖励混合分",
+        "llm_judge_mean": "LLM judge",
         "mean_answer_chars": "平均答案长度（字）",
     }
     for key, label in labels.items():
         lines.append(f"| {label} | {summary['vllm'][key]} | {summary['api'][key]} |")
     lines.append("")
-    lines.append("## RL 子项均分")
-    lines.append("")
-    lines.append("| 子 reward | vLLM | DeepSeek |")
-    lines.append("|---|---:|---:|")
-    for k in SUB_KEYS:
-        lines.append(f"| {k} | {summary['vllm']['rl_sub_means'][k]} | {summary['api']['rl_sub_means'][k]} |")
-    lines.append("")
     lines.append("## 逐条明细")
     lines.append("")
-    lines.append("| case | query | vLLM 状态/混合分 | DeepSeek 状态/混合分 |")
+    lines.append("| case | query | Voyager-4B 状态/混合分 | DeepSeek 状态/混合分 |")
     lines.append("|---|---|---|---|")
     vllm_map = {r["case_id"]: r for r in load("vllm")}
     api_map = {r["case_id"]: r for r in load("api")}

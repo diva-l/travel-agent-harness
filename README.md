@@ -21,7 +21,7 @@
 
 与常见的「Prompt + 大模型 API」旅行 Demo 相比，这个项目的不同主要在两点：
 
-1. **自己训练的规划模型**。Planner 不是调用商用大模型 API，而是基于 Qwen3-4B 经过 **SFT → Agentic RL（GRPO）** 后训练得到的 **Voyager-4B**：SFT 阶段学习工具调用协议与格式，RL 阶段在真实工具循环里以过程奖励（schema 合规、工具效率、阶段感知、LLM judge 等六维子奖励）优化规划策略。
+1. **自己训练的规划模型**。Planner 不是调用商用大模型 API，而是基于 Qwen3-4B 经过 **SFT → Agentic RL（GRPO）** 后训练得到的 **Voyager-4B**：SFT 阶段学习工具调用协议与格式，RL 阶段在真实工具循环里以过程奖励优化规划策略。
 2. **Harness 运行时约束**。模型不直接面对用户，而是运行在 Harness（运行时约束框架）内：预算上限、Schema 校验、Checkpoint、全量 Trace、人工审批、证据门禁全部由框架强制执行。模型的每一次工具调用都可回溯、可恢复、可从任一检查点分叉复跑。
 
 本仓库包含 **Harness 内核 + 评测体系 + 产品化前端**；模型权重托管在 Hugging Face（[fantastic-youki/Voyager-4B](https://huggingface.co/fantastic-youki/Voyager-4B)），下载与接入见[快速开始](#快速开始)的模式 B。
@@ -67,7 +67,7 @@
 | **可观测性** | 黑盒，只看到最终回答 | **全量 Trace**：模型轮次、工具调用、状态迁移、预算消耗、失败原因逐条落库，可回放审计 |
 | **输出质量** | 模型说什么就是什么，可能凭空编造 | **证据门禁**：零取证的空想答案直接拒收；Report 阶段做 Schema 校验的结构化转换 |
 | **安全** | 无防护 | 工具级输入/输出 **Guardrail**；副作用工具声明 `requires_approval` 后任务暂停，等待**人工审批**放行 |
-| **评测** | 凭感觉演示 | 确定性抽样测试集 + 四路对比（基座 / SFT / RL / DeepSeek）+ 逐条数据全部公开可复跑 |
+| **评测** | 凭感觉演示 | 训练侧阶梯评测（基座 < SFT < RL）+ 与 DeepSeek 同环境对照 + 逐条数据全部公开可复跑 |
 
 ## 支持的工具与数据源
 
@@ -155,20 +155,33 @@
 
 ## 评测结果
 
-测试集：[eval_results/data/test_final.jsonl](eval_results/data/test_final.jsonl) 80 条中确定性抽样 10 条（指纹 `b7d3c735…e0ef4303`）；工具链为真实外部 API（高德 + Firecrawl）；judge=deepseek-v4-flash；运行环境已全开训练对齐开关。脚本与逐条数据在 [eval_results/](eval_results/README.md)。
+### 训练侧评测：基座 < SFT < RL
 
-### 基座 → SFT → RL 四路对比（DeepSeek 作参照）
+先是训练工程侧的结论（此阶段未接入 Harness，纯模型能力对比）。80 条测试集，LLM-as-Judge 双向打分消除位置偏差（综合分 = 0.3×路径 + 0.7×答案；judge 为 GPT-5.4-mini，另用 Gemini-3-flash 交叉验证）：
 
-| 指标 | 基座 Qwen3-4B | SFT 阶段 | **Voyager-4B (RL)** | DeepSeek |
-|---|---:|---:|---:|---:|
-| 完成率 | 1.0 | 0.8 | 0.9 | 0.9 |
-| 必需工具覆盖率 | 0.65 | 0.69 | **0.775** | **0.775** |
-| 工具错误率 | 0.02 | 0.34 | 0.12 | 0.05 |
-| 重复调用阻断 | 0 | 12 | **1** | 0 |
-| RL 混合分（phase3） | 0.419 | 0.223 | **0.480** | 0.461 |
-| LLM judge | 0.48 | 0.27 | **0.60** | 0.57 |
+| 对比 | 均分（前者 vs 后者） | 胜率（胜/负/平） |
+|---|---|---|
+| SFT vs 基座 Qwen3-4B | 6.51 vs 6.23 | 51 / 27 / 2 |
+| **RL vs 基座 Qwen3-4B** | **6.94 vs 6.12** | **56 / 21 / 3** |
+| **RL vs SFT** | **6.85 vs 6.31** | **47 / 29 / 4** |
+| RL vs Qwen3-14B 基座 | 6.88 vs 5.86 | 53 / 23 / 4 |
 
-全开训练环境对齐开关后，Voyager-4B 在必需工具覆盖率上追平 DeepSeek，RL 混合分与 LLM judge 分反超，评测结论与训练侧 80 条 judge 结果一致、可复现。逐条明细：[eval_results/compare_report.md](eval_results/compare_report.md)。
+阶梯结论：基座 < SFT < RL 稳步提升；训练后的 4B 反超未训练的 14B 近 1 分；换 judge 交叉验证方向一致（RL 8.34 vs 基座 7.80），后训练链路有效。
+
+### 接入 Harness 后：Voyager-4B vs deepseek-v4-pro
+
+上面是训练侧的结论。把 RL 模型接入本项目的 Harness（有界循环、护栏、Trace、前端全链路）之后，再在**同一 Harness、同一真实工具链**（高德 + Firecrawl）下与 DeepSeek 对照——测试集 [eval_results/data/test_final.jsonl](eval_results/data/test_final.jsonl) 确定性抽样 10/80（指纹 `b7d3c735…e0ef4303`），judge=deepseek-v4-flash，训练对齐开关全开：
+
+| 指标 | Voyager-4B (RL) | deepseek-v4-pro |
+|---|---:|---:|
+| 完成率 | 0.9 | 0.9 |
+| 必需工具覆盖率 | **0.775** | **0.775** |
+| 工具错误率 | 0.12 | 0.05 |
+| 重复调用阻断 | 1 | 0 |
+| 过程奖励混合分 | **0.480** | 0.461 |
+| LLM judge | **0.60** | 0.57 |
+
+必需工具覆盖率追平 DeepSeek，过程奖励混合分与 judge 分反超。逐条明细与复跑脚本：[eval_results/](eval_results/README.md)。
 
 ### 工程压测（2026-09-08）
 
