@@ -70,6 +70,27 @@
 | **安全** | 无防护 | 工具级输入/输出 **Guardrail**；副作用工具声明 `requires_approval` 后任务暂停，等待**人工审批**放行 |
 | **评测** | 凭感觉演示 | 确定性抽样测试集 + 四路对比（基座 / SFT / RL / DeepSeek）+ 逐条数据全部公开可复跑 |
 
+## 支持的工具与数据源
+
+目前共 8 个工具，契约（名称 / 描述 / 参数 Schema）与 RL 训练环境逐字一致，背后的数据源可按需切换：
+
+| 工具 | 功能 | 可用数据源 |
+|---|---|---|
+| `search` | 批量网页检索：query 数组，一次调用返回每个查询前 5 条结果 | 离线 fixtures ↔ Firecrawl（真实检索） |
+| `visit` | 访问网页，按给定目标返回内容摘要（可为 URL 数组） | 离线 fixtures ↔ Firecrawl（可选 LLM 提炼） |
+| `weather_search` | 按城市查询天气，最多 4 天预报 | 离线 fixtures ↔ 高德 Web 服务 |
+| `poi_search` | 按文本搜索地点，返回地址与经纬度（最多 8 条） | 离线 fixtures ↔ 高德 Web 服务 |
+| `around_search` | 以圆心 + 半径搜索周边地点（最多 10 条） | 离线 fixtures ↔ 高德 Web 服务 |
+| `route_planning` | 路线规划：驾车 / 步行 / 骑行 / 电动车 / 公交，支持途经点 | 离线 fixtures ↔ 高德 Web 服务 |
+| `train_tickets_search` | 按日期查询城市间火车 / 动车 / 高铁票 | 离线 fixtures ↔ LLM 模拟器（训练对齐用） |
+| `flights_search` | 按日期查询城市间航班 | 离线 fixtures ↔ LLM 模拟器（训练对齐用） |
+
+说明：
+
+- **离线 fixtures**（默认）：确定性演示数据，不联网、不需要任何 key，用于测试与快速体验
+- **真实数据**：地理类四工具走高德 Web 服务，检索类两工具走 Firecrawl，配置见[快速开始](#快速开始)第 5 步
+- **火车 / 航班没有接真实票务 API**——这是刻意为之：RL 训练环境里这两个工具本来就是 LLM 模拟器（训练侧 prompt 逐字复刻），评测时给模型喂模拟数据才符合它的训练分布；若要接真实票务，需自行实现 handler 并保持契约不变
+
 ## Harness 设计详解
 
 ### 运行时内核：有界状态机
@@ -165,12 +186,26 @@
 
 ### 1. 安装
 
-Python 3.11+：
+要求 **Python 3.11 或更高版本**（使用了 `dataclass slots` 等新语法，低版本无法运行）。无需 Node.js——前端已预编译进 Python 包，只有要改前端源码时才需要 Node。
 
 ```bash
+git clone <本仓库地址>
+cd TravelAgentHarness
+
+# 创建并激活虚拟环境
 python -m venv .venv
-.venv/bin/pip install -r requirements.txt   # 或 pip install -e '.[test]'
+# Linux / macOS:
+source .venv/bin/activate
+# Windows PowerShell:
+.venv\Scripts\Activate.ps1
+
+# 安装依赖（FastAPI / uvicorn / pydantic / urllib3 / json_repair）
+pip install -r requirements.txt        # 并把 travel-harness 命令装入环境
+# 或开发模式安装（含测试依赖）：
+pip install -e '.[test]'
 ```
+
+下文命令中的 `.venv/bin/travel-harness` 是 Linux/macOS 路径；Windows 下激活虚拟环境后直接写 `travel-harness` 即可。
 
 ### 2. 选择 Planner 模式
 
