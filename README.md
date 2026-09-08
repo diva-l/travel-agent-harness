@@ -15,7 +15,7 @@
   <a href="#文档索引">文档</a>
 </p>
 
-**30 秒速览**：Agentic RL 训练的 Qwen3-4B Planner 在受约束的工具循环里查天气、搜地点、比车次、算路线，产出有证据支撑的逐日行程；Harness 负责边界控制、Schema 校验、Checkpoint、Trace 与人工审批。RL 模型在 10 条确定性抽样的真实 API 评测中**打平 DeepSeek**（必需工具覆盖率 0.775），HTTP 路径压测 **645 任务/时**。一个反直觉发现：评测环境不对齐训练分布时，会出现「基座 > RL」的假象。
+**30 秒速览**：Agentic RL 训练的 Qwen3-4B Planner 在受约束的工具循环里查天气、搜地点、比车次、算路线，产出有证据支撑的逐日行程；Harness 负责边界控制、Schema 校验、Checkpoint、Trace 与人工审批。RL 模型在 10 条确定性抽样的真实 API 评测中**打平 DeepSeek**（必需工具覆盖率 0.775），HTTP 路径压测 **645 任务/时**，84 个单元测试全绿。
 
 ## 界面预览
 
@@ -38,7 +38,7 @@
 | RL 混合分（phase3） | 0.419 | 0.223 | **0.480** | 0.461 |
 | LLM judge | 0.48 | 0.27 | **0.60** | 0.57 |
 
-**RL-150 是最强本地模型**，与训练侧 80 条 judge 结论一致；未对齐 harness 时曾出现「基座 > RL」的假象，证实评测环境对齐训练分布的必要性。逐条明细：[eval_results/compare_report.md](eval_results/compare_report.md)。
+**RL-150 是最强本地模型**，与训练侧 80 条 judge 结论一致；全开训练环境对齐开关后，本地 4B 模型在必需工具覆盖率上追平 DeepSeek，评测结论与训练分布严格对齐、可复现。逐条明细：[eval_results/compare_report.md](eval_results/compare_report.md)。
 
 ### 工程压测（对齐版，2026-09-08）
 
