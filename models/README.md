@@ -4,7 +4,7 @@
 
 ```text
 models/
-└── TravelPlanner-4B/      # RL 最终权重（Qwen3-4B，bf16，SFT + GRPO 后训练）
+└── Voyager-4B/      # RL 最终权重（Qwen3-4B，bf16，SFT + GRPO 后训练）
     ├── config.json
     ├── model.safetensors
     ├── tokenizer.json
@@ -15,7 +15,7 @@ models/
 
 ```bash
 VLLM_USE_FLASHINFER_SAMPLER=0 python -m vllm.entrypoints.openai.api_server \
-  --model models/TravelPlanner-4B --served-model-name travel-planner \
+  --model models/Voyager-4B --served-model-name travel-planner \
   --max-model-len 50000 --port 8000
 ```
 

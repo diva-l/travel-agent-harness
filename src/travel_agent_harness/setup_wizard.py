@@ -47,7 +47,7 @@ def run_setup(
     if system == "Linux":
         print_fn("本机支持两种 Planner 模式：")
         print_fn("  1) api  — 托管大模型 API（DeepSeek 等 OpenAI 兼容端点），无需 GPU")
-        print_fn("  2) vllm — 本地 TravelPlanner-4B（需 NVIDIA GPU，且已启动 vLLM 服务）")
+        print_fn("  2) vllm — 本地 Voyager-4B（需 NVIDIA GPU，且已启动 vLLM 服务）")
         choice = ask("请选择", "1")
         while choice not in {"1", "2", "api", "vllm"}:
             choice = ask("请输入 1 或 2", "1")
@@ -55,7 +55,7 @@ def run_setup(
     else:
         planner_mode = "api"
         print_fn(f"当前系统（{system}）仅支持 api 模式（托管大模型 API）。")
-        print_fn("vllm 模式（本地 TravelPlanner-4B）依赖 Linux + NVIDIA GPU，本机不可用。")
+        print_fn("vllm 模式（本地 Voyager-4B）依赖 Linux + NVIDIA GPU，本机不可用。")
 
     # 2. Model credentials.
     lines: list[str] = [

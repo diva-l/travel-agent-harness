@@ -20,7 +20,7 @@ DATA = OUT / "data"
 SOURCES = {
     "base": ("基座 Qwen3-4B（未微调）", DATA / "results_vllm_base.jsonl"),
     "sft": ("SFT checkpoint-420", DATA / "results_vllm_sft.jsonl"),
-    "rl150": ("TravelPlanner-4B（RL 最终）", DATA / "results_vllm_rl150.jsonl"),
+    "rl150": ("Voyager-4B（RL 最终）", DATA / "results_vllm_rl150.jsonl"),
     "api": ("DeepSeek（托管参照）", DATA / "results_api.jsonl"),
 }
 

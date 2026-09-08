@@ -7,7 +7,7 @@
 
 ## 总览
 
-| 指标 | 基座 Qwen3-4B（未微调） | SFT checkpoint-420 | TravelPlanner-4B（RL 最终） | DeepSeek（托管参照） |
+| 指标 | 基座 Qwen3-4B（未微调） | SFT checkpoint-420 | Voyager-4B（RL 最终） | DeepSeek（托管参照） |
 |---|---:|---:|---:|---:|
 | 完成率 | 1.0 | 0.8 | 0.9 | 0.9 |
 | 必需工具覆盖率 | 0.65 | 0.6917 | 0.775 | 0.775 |
@@ -21,7 +21,7 @@
 
 ## RL 子项均分
 
-| 子 reward | 基座 Qwen3-4B（未微调） | SFT checkpoint-420 | TravelPlanner-4B（RL 最终） | DeepSeek（托管参照） |
+| 子 reward | 基座 Qwen3-4B（未微调） | SFT checkpoint-420 | Voyager-4B（RL 最终） | DeepSeek（托管参照） |
 |---|---:|---:|---:|---:|
 | process_step | 0.3 | 0.11 | 0.205 | 0.255 |
 | tool_schema | 0.25 | 0.25 | 0.25 | 0.25 |
@@ -32,7 +32,7 @@
 
 ## 逐条状态
 
-| case | 基座 Qwen3-4B | SFT checkpoint-420 | TravelPlanner-4B（RL） | DeepSeek |
+| case | 基座 Qwen3-4B | SFT checkpoint-420 | Voyager-4B（RL） | DeepSeek |
 |---|---|---|---|---|
 | 00e0280e | completed / 0.4065 | completed / 0.0865 | completed / 0.5765 | completed / 0.7165 |
 | 12090666 | completed / 0.5005 | exhausted / -0.113 | completed / 0.3325 | exhausted / -0.124 |

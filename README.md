@@ -21,7 +21,7 @@
 
 与常见的「Prompt + 大模型 API」旅行 Demo 相比，这个项目的不同主要在两点：
 
-1. **自己训练的规划模型**。Planner 不是调用商用大模型 API，而是基于 Qwen3-4B 经过 **SFT → Agentic RL（GRPO）** 后训练得到的 **TravelPlanner-4B**：SFT 阶段学习工具调用协议与格式，RL 阶段在真实工具循环里以过程奖励（schema 合规、工具效率、阶段感知、LLM judge 等六维子奖励）优化规划策略。
+1. **自己训练的规划模型**。Planner 不是调用商用大模型 API，而是基于 Qwen3-4B 经过 **SFT → Agentic RL（GRPO）** 后训练得到的 **Voyager-4B**：SFT 阶段学习工具调用协议与格式，RL 阶段在真实工具循环里以过程奖励（schema 合规、工具效率、阶段感知、LLM judge 等六维子奖励）优化规划策略。
 2. **Harness 运行时约束**。模型不直接面对用户，而是运行在 Harness（运行时约束框架）内：预算上限、Schema 校验、Checkpoint、全量 Trace、人工审批、证据门禁全部由框架强制执行。模型的每一次工具调用都可回溯、可恢复、可从任一检查点分叉复跑。
 
 本仓库包含 **Harness 内核 + 评测体系 + 产品化前端**；训练代码与模型权重不在本仓库（模型接入见[快速开始](#快速开始)的模式 B）。
@@ -61,7 +61,7 @@
 
 | 维度 | 传统方案：Prompt + 大模型 API | 本项目：自训练模型 + Harness |
 |---|---|---|
-| **模型** | 通用大模型（GPT / DeepSeek 等），能力黑盒、行为靠提示词引导 | **TravelPlanner-4B**：Qwen3-4B 基座 → SFT 学习工具调用格式 → Agentic RL 在真实工具循环里优化规划策略 |
+| **模型** | 通用大模型（GPT / DeepSeek 等），能力黑盒、行为靠提示词引导 | **Voyager-4B**：Qwen3-4B 基座 → SFT 学习工具调用格式 → Agentic RL 在真实工具循环里优化规划策略 |
 | **行为边界** | 无。模型可以无限循环、重复调用、超预算运行 | Harness 有界 Agent Loop：步数 / 墙钟 / 累计 Token / 工具调用数**四项硬预算**，完全相同调用第 4 次直接阻断 |
 | **可靠性** | 失败即终止，无中间状态 | 每轮写入 SQLite **Checkpoint**，崩溃可恢复、可从任一 Checkpoint **Fork 复跑** |
 | **可观测性** | 黑盒，只看到最终回答 | **全量 Trace**：模型轮次、工具调用、状态迁移、预算消耗、失败原因逐条落库，可回放审计 |
@@ -159,7 +159,7 @@
 
 ### 基座 → SFT → RL 四路对比（DeepSeek 作参照）
 
-| 指标 | 基座 Qwen3-4B | SFT 阶段 | **TravelPlanner-4B (RL)** | DeepSeek |
+| 指标 | 基座 Qwen3-4B | SFT 阶段 | **Voyager-4B (RL)** | DeepSeek |
 |---|---:|---:|---:|---:|
 | 完成率 | 1.0 | 0.8 | 0.9 | 0.9 |
 | 必需工具覆盖率 | 0.65 | 0.69 | **0.775** | **0.775** |
@@ -168,7 +168,7 @@
 | RL 混合分（phase3） | 0.419 | 0.223 | **0.480** | 0.461 |
 | LLM judge | 0.48 | 0.27 | **0.60** | 0.57 |
 
-全开训练环境对齐开关后，TravelPlanner-4B 在必需工具覆盖率上追平 DeepSeek，RL 混合分与 LLM judge 分反超，评测结论与训练侧 80 条 judge 结果一致、可复现。逐条明细：[eval_results/compare_report.md](eval_results/compare_report.md)。
+全开训练环境对齐开关后，Voyager-4B 在必需工具覆盖率上追平 DeepSeek，RL 混合分与 LLM judge 分反超，评测结论与训练侧 80 条 judge 结果一致、可复现。逐条明细：[eval_results/compare_report.md](eval_results/compare_report.md)。
 
 ### 工程压测（2026-09-08）
 
@@ -230,13 +230,13 @@ TRAVEL_HARNESS_MODEL_PROTOCOL=native               # 默认值
 
 Report Model（把规划结果整理成路线 JSON）默认复用 Planner 的 key 和端点，无需额外配置。任何 OpenAI 兼容端点（不只 DeepSeek）都可以通过改 `BASE_URL` / `MODEL` 接入。
 
-#### 模式 B：本地 TravelPlanner-4B（vLLM，仅 Linux + GPU）
+#### 模式 B：本地 Voyager-4B（vLLM，仅 Linux + GPU）
 
-用自己训练的 RL 模型当 Planner，走训练时的 `<tool_call>` 文本协议。模型权重不进本仓库，放到 `models/TravelPlanner-4B/`（Qwen3-4B，bf16）后，用 vLLM 暴露 OpenAI-compatible API：
+用自己训练的 RL 模型当 Planner，走训练时的 `<tool_call>` 文本协议。模型权重不进本仓库，放到 `models/Voyager-4B/`（Qwen3-4B，bf16）后，用 vLLM 暴露 OpenAI-compatible API：
 
 ```bash
 python -m vllm.entrypoints.openai.api_server \
-  --model models/TravelPlanner-4B --served-model-name travel-planner \
+  --model models/Voyager-4B --served-model-name travel-planner \
   --max-model-len 50000 --port 8000
 ```
 

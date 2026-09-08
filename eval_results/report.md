@@ -1,4 +1,4 @@
-# 评测报告：TravelPlanner-4B (vLLM) vs DeepSeek 基线
+# 评测报告：Voyager-4B (vLLM) vs DeepSeek 基线
 
 - 测试集：`test_final.jsonl` 确定性抽样 10/80（按 id 排序每隔 8 条）
 - 数据集指纹（sha256）：`b7d3c735c13f92328aa0bf246d0649e4a1f8cfac6fcc187281775622e0ef4303`
@@ -8,7 +8,7 @@
 
 ## 总览
 
-| 指标 | vLLM (TravelPlanner-4B) | DeepSeek (api) |
+| 指标 | vLLM (Voyager-4B) | DeepSeek (api) |
 |---|---:|---:|
 | 完成率 | 0.6 | 1.0 |
 | 必需工具覆盖率 | 0.7 | 0.65 |
@@ -41,7 +41,7 @@
 两种模式下 token 的含义**完全不同**，不能直接横比：
 
 - **DeepSeek (api)**：token = 钱。19,213 prompt + 1,349 completion 每 case，按托管 API 计费，是真实货币成本。
-- **vLLM (TravelPlanner-4B)**：token = 零边际成本（自有 GPU，电费已含在租机费里）。这里的数字只有两个意义：
+- **vLLM (Voyager-4B)**：token = 零边际成本（自有 GPU，电费已含在租机费里）。这里的数字只有两个意义：
   1. **防失控护栏记账**——harness 累计上限已放宽到 300k，只为熔断死循环；
   2. **GPU 时间代理**——本地计算不产生账单，平均耗时 20.3s 与 DeepSeek API（19.45s）相当。
 
@@ -69,7 +69,7 @@
 | 8a4741c4 | 13/13 步 | 54,841 | 10 |
 | d306664e | 13/13 步 | 98,903 | 0 |
 
-即：在训练契约内，这 4 条是模型** genuinely 没在 13 轮内收敛**（6dcca263 烧了 24.8 万累计 token、16 次工具调用仍未收尾），而非预算配置问题——这是 TravelPlanner-4B 的真实能力边界。
+即：在训练契约内，这 4 条是模型** genuinely 没在 13 轮内收敛**（6dcca263 烧了 24.8 万累计 token、16 次工具调用仍未收尾），而非预算配置问题——这是 Voyager-4B 的真实能力边界。
 
 ## 逐条明细
 

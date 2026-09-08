@@ -12,7 +12,7 @@
 |---|---|
 | [report.md](report.md) | 主报告：总览、RL 子项、token 口径与训练对齐说明、exhausted 明细、逐条 |
 | [data/summary.json](data/summary.json) | 聚合指标（含 prompt/completion 拆分、训练对齐参数块） |
-| [data/results_vllm_rl150.jsonl](data/results_vllm_rl150.jsonl) | TravelPlanner-4B（RL） 逐条原始记录（对齐预算后重跑版） |
+| [data/results_vllm_rl150.jsonl](data/results_vllm_rl150.jsonl) | Voyager-4B（RL） 逐条原始记录（对齐预算后重跑版） |
 | [data/results_api.jsonl](data/results_api.jsonl) | DeepSeek 基线逐条原始记录 |
 | [data/gold_selected.jsonl](data/gold_selected.jsonl) | 抽中的 10 条样本（judge 对照） |
 | [scripts/run_eval.py](scripts/run_eval.py) / [scripts/summarize.py](scripts/summarize.py) | 可复跑脚本 |
