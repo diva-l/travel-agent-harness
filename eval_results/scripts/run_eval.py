@@ -6,7 +6,7 @@ RL scoring reuses the training-side reward plugin verbatim
 (travel_agentic_rl/.../tooluse_reward_parser_aligned.py) with a stubbed
 swift.rewards module, so the numbers are produced by the same code path that
 trained the model. Curriculum phase-3 weights [0.05, 0.07, 0.03, 0.05, 0.10,
-0.70] apply (checkpoint-150 of 200 steps).
+0.70] apply (GRPO checkpoint at step 150 of 200).
 
 Harness scoring follows the project's runtime metrics plus EvoAgent-style
 reproducibility gates (dataset fingerprint, per-case scorecard).

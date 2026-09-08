@@ -47,7 +47,7 @@ def main() -> None:
         summary[mode] = aggregate(records)
     (OUT / "data" / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    lines = ["# 评测报告：checkpoint-150 (vLLM) vs DeepSeek 基线", ""]
+    lines = ["# 评测报告：TravelPlanner-4B (vLLM) vs DeepSeek 基线", ""]
     lines.append("- 测试集：`test_final.jsonl` 确定性抽样 10/80（按 id 排序每隔 8 条）")
     lines.append("- 数据集指纹（sha256）：`b7d3c735c13f92328aa0bf246d0649e4a1f8cfac6fcc187281775622e0ef4303`")
     lines.append("- 工具链：高德 Web 服务（真实） + Firecrawl（真实检索）")
@@ -57,7 +57,7 @@ def main() -> None:
     lines.append("")
     lines.append("## 总览")
     lines.append("")
-    lines.append("| 指标 | vLLM (checkpoint-150) | DeepSeek (api) |")
+    lines.append("| 指标 | vLLM (TravelPlanner-4B) | DeepSeek (api) |")
     lines.append("|---|---:|---:|")
     labels = {
         "completion_rate": "完成率",

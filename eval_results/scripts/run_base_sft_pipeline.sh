@@ -6,7 +6,7 @@ cd /root/autodl-tmp/TravelAgentHarness
 V=.venv/bin
 BASE=/root/autodl-tmp/pretrained/models/Qwen--Qwen3-4B-Instruct-2507/snapshots/master
 SFT=/root/autodl-tmp/output/qwen3_4b_sft_merged_420
-RL=/root/autodl-tmp/output/grpo_parser_aligned_run/v8-20260514-140934/checkpoint-150
+RL=/root/autodl-tmp/TravelPlanner-4B
 
 serve_and_wait() {  # $1=model path  $2=log tag
     pkill -f "vllm serve" 2>/dev/null; sleep 5

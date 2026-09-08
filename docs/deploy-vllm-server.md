@@ -77,7 +77,7 @@ tar -czf travel-agent-harness.tar.gz \
 模型 checkpoint 目录单独上传（体积大，建议用平台网盘或 `scp`/`rsync`）：
 
 ```bash
-scp -P <端口> -r checkpoint-150/ root@<实例地址>:/root/autodl-tmp/
+scp -P <端口> -r TravelPlanner-4B/ root@<实例地址>:/root/autodl-tmp/
 ```
 
 ### 2. 安装
@@ -103,7 +103,7 @@ pip install -U vllm    # 推理服务
 ### 3. 启动 vLLM（不压缩，bf16 原样加载）
 
 ```bash
-vllm serve /root/autodl-tmp/checkpoint-150 \
+vllm serve /root/autodl-tmp/TravelPlanner-4B \
   --served-model-name travel-planner \
   --max-model-len 50000 \
   --gpu-memory-utilization 0.90 \

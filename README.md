@@ -233,11 +233,11 @@ Report Model（把规划结果整理成路线 JSON）默认复用 Planner 的 ke
 
 #### 模式 B：本地 TravelPlanner-4B（vLLM，仅 Linux + GPU）
 
-用自己训练的 RL 模型当 Planner，走训练时的 `<tool_call>` 文本协议。模型权重不进本仓库，放到 `models/checkpoint-150/`（Qwen3-4B，bf16）后，用 vLLM 暴露 OpenAI-compatible API：
+用自己训练的 RL 模型当 Planner，走训练时的 `<tool_call>` 文本协议。模型权重不进本仓库，放到 `models/TravelPlanner-4B/`（Qwen3-4B，bf16）后，用 vLLM 暴露 OpenAI-compatible API：
 
 ```bash
 python -m vllm.entrypoints.openai.api_server \
-  --model models/checkpoint-150 --served-model-name travel-planner \
+  --model models/TravelPlanner-4B --served-model-name travel-planner \
   --max-model-len 50000 --port 8000
 ```
 
