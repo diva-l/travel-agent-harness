@@ -53,12 +53,6 @@
 
 ![运行演示（2 倍速）](docs/demo.webp)
 
-界面截图：
-
-![桌面端规划结果](docs/screenshots/desktop_full.png)
-
-更多截图见 [docs/screenshots/](docs/screenshots/)。
-
 ## 与传统方案的区别
 
 市面上大多数「AI 旅行规划」项目，本质是写一段 Prompt 直接调用通用大模型 API——模型行为靠提示词约定，没有任何强制手段。本项目的思路是：**模型自己训练，运行时由 Harness 强制约束**。
@@ -367,7 +361,7 @@ python eval_results/scripts/summarize.py               # results_*.jsonl → rep
 ├── tests/                      # 91 个单元测试（unittest，无外部依赖）
 ├── evals/                      # CLI eval 固定用例
 ├── eval_results/               # 评测/压测：报告在顶层，scripts/ 为可复跑脚本，data/ 为逐条数据
-├── docs/                       # 部署文档、界面截图、hero 图
+├── docs/                       # 部署文档、运行演示动画、hero 图
 ├── models/                     # 模型权重放置目录，见快速开始模式 B
 ├── .env.example                # 全部配置项注释
 └── requirements.txt

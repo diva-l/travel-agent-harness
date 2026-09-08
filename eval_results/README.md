@@ -37,12 +37,6 @@ harness 自身开销仍 ≈0（逐任务均值 -11%~+0.7%）；c4 吞吐见顶 1
 schema-echo 护栏场均拦截 0.6 次且全部自愈；真实 HTTP 路径 worker=16 时
 **645 任务/时、排队 ~3s**（worker=2 时 42.6 任务/时、排队 286s，吞吐 15×）。
 
-## 三、前端展示截图
-
-[../docs/screenshots/](../docs/screenshots/)：桌面 1440px ×3（整页/视口/细节），
-任务为杭州 3 日 2 夜行程（fd9cc23e），含预算卡片、按天筛选、站点时间线、配图、
-Planner 原始规划全文面板。
-
 ## 注意事项
 
 - 打分是**可插拔接口**：`run_eval.py --scorer your_scorer.py` 可挂任意实现了 `score(messages) -> float` 的打分器；report.md 的过程奖励混合分由训练侧 scorer 产出（不随仓库发布），无 scorer 时脚本照常输出全部 harness 层指标
