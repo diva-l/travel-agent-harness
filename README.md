@@ -22,9 +22,7 @@ HTTP 路径压测 **645 任务/时**。一个反直觉发现：评测环境不�
 
 ## 界面预览
 
-| 桌面端（整页） | 移动端 |
-|---|---|
-| ![桌面端规划结果](docs/screenshots/desktop_full.png) | ![移动端路线视图](docs/screenshots/mobile_full.png) |
+![桌面端规划结果](docs/screenshots/desktop_full.png)
 
 更多截图见 [docs/screenshots/](docs/screenshots/)。
 
