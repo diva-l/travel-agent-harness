@@ -82,14 +82,14 @@
 | `poi_search` | 按文本搜索地点，返回地址与经纬度（最多 8 条） | 离线 fixtures ↔ 高德 Web 服务 |
 | `around_search` | 以圆心 + 半径搜索周边地点（最多 10 条） | 离线 fixtures ↔ 高德 Web 服务 |
 | `route_planning` | 路线规划：驾车 / 步行 / 骑行 / 电动车 / 公交，支持途经点 | 离线 fixtures ↔ 高德 Web 服务 |
-| `train_tickets_search` | 按日期查询城市间火车 / 动车 / 高铁票 | 离线 fixtures ↔ LLM 模拟器（训练对齐用） |
-| `flights_search` | 按日期查询城市间航班 | 离线 fixtures ↔ LLM 模拟器（训练对齐用） |
+| `train_tickets_search` | 按日期查询城市间火车 / 动车 / 高铁票 | 离线 fixtures ↔ LLM 模拟器 |
+| `flights_search` | 按日期查询城市间航班 | 离线 fixtures ↔ LLM 模拟器 |
 
 说明：
 
 - **离线 fixtures**（默认）：确定性演示数据，不联网、不需要任何 key，用于测试与快速体验
 - **真实数据**：地理类四工具走高德 Web 服务，检索类两工具走 Firecrawl，配置见[快速开始](#快速开始)第 5 步
-- **火车 / 航班没有接真实票务 API**——这是刻意为之：RL 训练环境里这两个工具本来就是 LLM 模拟器（训练侧 prompt 逐字复刻），评测时给模型喂模拟数据才符合它的训练分布；若要接真实票务，需自行实现 handler 并保持契约不变
+- **火车 / 航班没有接真实票务 API**——真实原因很简单：火车票没有公开的官方 API，第三方票务接口按调用计费且价格不低，对演示和评测场景不划算，因此用 LLM 模拟器生成格式一致的票务数据；若要接真实票务，需自行实现 handler 并保持契约不变
 
 ## Harness 设计详解
 
