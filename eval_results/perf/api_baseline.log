@@ -1,0 +1,33 @@
+
+=== tier users=8 ===
+  user 1 completed  t+  104.7s steps=13
+  user 4 completed  t+  199.2s steps=6
+  user 0 completed  t+  381.5s steps=13
+  user 2 completed  t+  391.7s steps=13
+  user 5 completed  t+  529.5s steps=13
+  user 6 completed  t+  555.8s steps=9
+  user 3 completed  t+  558.8s steps=4
+  user 7 completed  t+  676.4s steps=13
+{
+ "users": 8,
+ "wall_seconds": 676.4,
+ "throughput_tasks_per_hour": 42.6,
+ "statuses": {
+  "completed": 8
+ },
+ "queue_wait_seconds": {
+  "mean": 286.2,
+  "max": 569.89
+ },
+ "task_latency_seconds": {
+  "p50": 529.51,
+  "max": 676.38
+ },
+ "vllm_tokens_per_sec": {
+  "prompt": 727.5,
+  "decode": 32.8
+ },
+ "submit_latency_max_s": 0.084
+}
+
+wrote /root/autodl-tmp/TravelAgentHarness/eval_results/perf/api_load_baseline.json

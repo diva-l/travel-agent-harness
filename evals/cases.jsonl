@@ -1,0 +1,2 @@
+{"case_id":"rail-weekend","prompt":"规划 2026-10-02 从杭州到上海的两日行程，预算 1800 元；先核对交通和核心地点，再给方案。","required_tools":["train_tickets_search","poi_search","route_planning"]}
+{"case_id":"weather-route","prompt":"规划 2026-10-10 从南京到苏州的一日游，预算 900 元；关注天气并验证景点动线。","required_tools":["weather_search","poi_search","route_planning"]}

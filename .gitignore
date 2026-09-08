@@ -1,0 +1,16 @@
+.env
+.venv/
+*.egg-info/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+*.db
+*.db-shm
+*.db-wal
+artifacts/*.json
+!artifacts/.gitkeep
+frontend/node_modules/
+models/*
+!models/README.md

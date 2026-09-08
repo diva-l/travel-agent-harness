@@ -1,0 +1,39 @@
+{
+  "vllm": {
+    "tasks": 10,
+    "interventions": {
+      "repeat_call_blocks": 16,
+      "validation_rejections": 3,
+      "budget_enforcements": 4,
+      "model_retries_absorbed": 0,
+      "evidence_gate_rejections": 0,
+      "tool_runtime_failures": 6
+    },
+    "total_interventions": 29,
+    "interventions_per_task": 2.9,
+    "tasks_with_at_least_one_intervention": 5,
+    "tasks_clean": 5
+  },
+  "api": {
+    "tasks": 10,
+    "interventions": {
+      "repeat_call_blocks": 0,
+      "validation_rejections": 0,
+      "budget_enforcements": 0,
+      "model_retries_absorbed": 0,
+      "evidence_gate_rejections": 0,
+      "tool_runtime_failures": 7
+    },
+    "total_interventions": 7,
+    "interventions_per_task": 0.7,
+    "tasks_with_at_least_one_intervention": 3,
+    "tasks_clean": 7
+  },
+  "interpretation": {
+    "repeat_call_blocks": "没有 harness：这些重复调用会真实打到外部 API，浪费配额且把上下文灌满重复观测",
+    "validation_rejections": "没有 harness：非法参数直接发往高德/Firecrawl，产生 4xx 与不可解析的报错文本",
+    "budget_enforcements": "没有 harness：失控循环会无限燃烧 token/时间",
+    "model_retries_absorbed": "没有 harness：模型输出解析失败 = 整个任务直接失败",
+    "evidence_gate_rejections": "没有 harness：零取证的空想答案会直接交付给用户"
+  }
+}

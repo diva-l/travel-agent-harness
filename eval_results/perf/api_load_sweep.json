@@ -1,0 +1,774 @@
+[
+  {
+    "users": 4,
+    "wall_seconds": 180.0,
+    "throughput_tasks_per_hour": 80.0,
+    "statuses": {
+      "completed": 4
+    },
+    "queue_wait_seconds": {
+      "mean": 2.35,
+      "max": 3.11
+    },
+    "task_latency_seconds": {
+      "p50": 145.82,
+      "max": 179.98
+    },
+    "vllm_tokens_per_sec": {
+      "prompt": 1948.8,
+      "decode": 45.2
+    },
+    "submit_latency_max_s": 0.079,
+    "tasks": [
+      {
+        "user": 0,
+        "submit_latency_s": 0.037,
+        "submitted_at": 14196472.307618372,
+        "first_running_s": 2.1,
+        "terminal_s": 77.18,
+        "status": "completed",
+        "metrics": {
+          "step": 13,
+          "elapsed_seconds": 76.66,
+          "total_tokens": 72104,
+          "tool_calls": 12,
+          "successful_tool_calls": 12,
+          "tool_errors": 0,
+          "validation_errors": 0
+        }
+      },
+      {
+        "user": 1,
+        "submit_latency_s": 0.023,
+        "submitted_at": 14196472.307618372,
+        "first_running_s": 2.1,
+        "terminal_s": 179.98,
+        "status": "completed",
+        "metrics": {
+          "step": 13,
+          "elapsed_seconds": 179.222,
+          "total_tokens": 67555,
+          "tool_calls": 12,
+          "successful_tool_calls": 12,
+          "tool_errors": 0,
+          "validation_errors": 0
+        }
+      },
+      {
+        "user": 2,
+        "submit_latency_s": 0.05,
+        "submitted_at": 14196472.307618372,
+        "first_running_s": 2.1,
+        "terminal_s": 145.82,
+        "status": "completed",
+        "metrics": {
+          "step": 13,
+          "elapsed_seconds": 145.446,
+          "total_tokens": 94986,
+          "tool_calls": 12,
+          "successful_tool_calls": 12,
+          "tool_errors": 0,
+          "validation_errors": 0
+        }
+      },
+      {
+        "user": 3,
+        "submit_latency_s": 0.079,
+        "submitted_at": 14196472.307618372,
+        "first_running_s": 3.11,
+        "terminal_s": 92.37,
+        "status": "completed",
+        "metrics": {
+          "step": 8,
+          "elapsed_seconds": 91.729,
+          "total_tokens": 124260,
+          "tool_calls": 16,
+          "successful_tool_calls": 16,
+          "tool_errors": 0,
+          "validation_errors": 0
+        }
+      }
+    ]
+  },
+  {
+    "users": 8,
+    "wall_seconds": 179.0,
+    "throughput_tasks_per_hour": 160.9,
+    "statuses": {
+      "completed": 8
+    },
+    "queue_wait_seconds": {
+      "mean": 2.79,
+      "max": 12.46
+    },
+    "task_latency_seconds": {
+      "p50": 111.42,
+      "max": 178.97
+    },
+    "vllm_tokens_per_sec": {
+      "prompt": 2678.6,
+      "decode": 111.4
+    },
+    "submit_latency_max_s": 0.111,
+    "tasks": [
+      {
+        "user": 0,
+        "submit_latency_s": 0.04,
+        "submitted_at": 14196652.325178912,
+        "first_running_s": 1.11,
+        "terminal_s": 111.42,
+        "status": "completed",
+        "metrics": {
+          "step": 7,
+          "elapsed_seconds": 110.952,
+          "total_tokens": 22872,
+          "tool_calls": 6,
+          "successful_tool_calls": 6,
+          "tool_errors": 0,
+          "validation_errors": 0
+        }
+      },
+      {
+        "user": 1,
+        "submit_latency_s": 0.111,
+        "submitted_at": 14196652.325178912,
+        "first_running_s": 2.14,
+        "terminal_s": 112.44,
+        "status": "completed",
+        "metrics": {
+          "step": 13,
+          "elapsed_seconds": 111.893,
+          "total_tokens": 50179,
+          "tool_calls": 12,
+          "successful_tool_calls": 12,
+          "tool_errors": 0,
+          "validation_errors": 0
+        }
+      },
+      {
+        "user": 2,
+        "submit_latency_s": 0.06,
+        "submitted_at": 14196652.325178912,
+        "first_running_s": 2.14,
+        "terminal_s": 160.88,
+        "status": "completed",
+        "metrics": {
+          "step": 13,
+          "elapsed_seconds": 160.337,
+          "total_tokens": 102345,
+          "tool_calls": 12,
+          "successful_tool_calls": 12,
+          "tool_errors": 0,
+          "validation_errors": 0
+        }
+      },
+      {
+        "user": 3,
+        "submit_latency_s": 0.073,
+        "submitted_at": 14196652.325178912,
+        "first_running_s": 1.11,
+        "terminal_s": 25.81,
+        "status": "completed",
+        "metrics": {
+          "step": 13,
+          "elapsed_seconds": 24.801,
+          "total_tokens": 65120,
+          "tool_calls": 12,
+          "successful_tool_calls": 12,
+          "tool_errors": 0,
+          "validation_errors": 0
+        }
+      },
+      {
+        "user": 4,
+        "submit_latency_s": 0.05,
+        "submitted_at": 14196652.325178912,
+        "first_running_s": 1.11,
+        "terminal_s": 178.97,
+        "status": "completed",
+        "metrics": {
+          "step": 13,
+          "elapsed_seconds": 178.108,
+          "total_tokens": 81007,
+          "tool_calls": 12,
+          "successful_tool_calls": 11,
+          "tool_errors": 1,
+          "validation_errors": 1
+        }
+      },
+      {
+        "user": 5,
+        "submit_latency_s": 0.074,
+        "submitted_at": 14196652.325178912,
+        "first_running_s": 12.46,
+        "terminal_s": 95.19,
+        "status": "completed",
+        "metrics": {
+          "step": 13,
+          "elapsed_seconds": 94.286,
+          "total_tokens": 71651,
+          "tool_calls": 12,
+          "successful_tool_calls": 12,
+          "tool_errors": 0,
+          "validation_errors": 0
+        }
+      },
+      {
+        "user": 6,
+        "submit_latency_s": 0.042,
+        "submitted_at": 14196652.325178912,
+        "first_running_s": 1.11,
+        "terminal_s": 53.43,
+        "status": "completed",
+        "metrics": {
+          "step": 7,
+          "elapsed_seconds": 52.686,
+          "total_tokens": 21760,
+          "tool_calls": 6,
+          "successful_tool_calls": 4,
+          "tool_errors": 2,
+          "validation_errors": 1
+        }
+      },
+      {
+        "user": 7,
+        "submit_latency_s": 0.023,
+        "submitted_at": 14196652.325178912,
+        "first_running_s": 1.11,
+        "terminal_s": 58.55,
+        "status": "completed",
+        "metrics": {
+          "step": 13,
+          "elapsed_seconds": 57.782,
+          "total_tokens": 77994,
+          "tool_calls": 12,
+          "successful_tool_calls": 11,
+          "tool_errors": 1,
+          "validation_errors": 1
+        }
+      }
+    ]
+  },
+  {
+    "users": 12,
+    "wall_seconds": 85.7,
+    "throughput_tasks_per_hour": 504.3,
+    "statuses": {
+      "completed": 12
+    },
+    "queue_wait_seconds": {
+      "mean": 3.04,
+      "max": 8.41
+    },
+    "task_latency_seconds": {
+      "p50": 35.24,
+      "max": 85.65
+    },
+    "vllm_tokens_per_sec": {
+      "prompt": 4335.2,
+      "decode": 233.7
+    },
+    "submit_latency_max_s": 0.128,
+    "tasks": [
+      {
+        "user": 0,
+        "submit_latency_s": 0.034,
+        "submitted_at": 14196831.322653249,
+        "first_running_s": 6.33,
+        "terminal_s": 20.86,
+        "status": "completed",
+        "metrics": {
+          "step": 6,
+          "elapsed_seconds": 19.961,
+          "total_tokens": 18500,
+          "tool_calls": 5,
+          "successful_tool_calls": 5,
+          "tool_errors": 0,
+          "validation_errors": 0
+        }
+      },
+      {
+        "user": 1,
+        "submit_latency_s": 0.093,
+        "submitted_at": 14196831.322653249,
+        "first_running_s": 1.14,
+        "terminal_s": 43.37,
+        "status": "completed",
+        "metrics": {
+          "step": 13,
+          "elapsed_seconds": 42.981,
+          "total_tokens": 32895,
+          "tool_calls": 12,
+          "successful_tool_calls": 12,
+          "tool_errors": 0,
+          "validation_errors": 0
+        }
+      },
+      {
+        "user": 2,
+        "submit_latency_s": 0.085,
+        "submitted_at": 14196831.322653249,
+        "first_running_s": 6.33,
+        "terminal_s": 33.2,
+        "status": "completed",
+        "metrics": {
+          "step": 9,
+          "elapsed_seconds": 32.413,
+          "total_tokens": 16894,
+          "tool_calls": 8,
+          "successful_tool_calls": 7,
+          "tool_errors": 1,
+          "validation_errors": 0
+        }
+      },
+      {
+        "user": 3,
+        "submit_latency_s": 0.022,
+        "submitted_at": 14196831.322653249,
+        "first_running_s": 1.14,
+        "terminal_s": 21.88,
+        "status": "completed",
+        "metrics": {
+          "step": 13,
+          "elapsed_seconds": 21.293,
+          "total_tokens": 76299,
+          "tool_calls": 12,
+          "successful_tool_calls": 12,
+          "tool_errors": 0,
+          "validation_errors": 0
+        }
+      },
+      {
+        "user": 4,
+        "submit_latency_s": 0.074,
+        "submitted_at": 14196831.322653249,
+        "first_running_s": 1.14,
+        "terminal_s": 46.42,
+        "status": "completed",
+        "metrics": {
+          "step": 13,
+          "elapsed_seconds": 46.079,
+          "total_tokens": 57059,
+          "tool_calls": 12,
+          "successful_tool_calls": 11,
+          "tool_errors": 1,
+          "validation_errors": 1
+        }
+      },
+      {
+        "user": 5,
+        "submit_latency_s": 0.05,
+        "submitted_at": 14196831.322653249,
+        "first_running_s": 2.17,
+        "terminal_s": 16.71,
+        "status": "completed",
+        "metrics": {
+          "step": 8,
+          "elapsed_seconds": 16.129,
+          "total_tokens": 17503,
+          "tool_calls": 7,
+          "successful_tool_calls": 7,
+          "tool_errors": 0,
+          "validation_errors": 0
+        }
+      },
+      {
+        "user": 6,
+        "submit_latency_s": 0.095,
+        "submitted_at": 14196831.322653249,
+        "first_running_s": 1.14,
+        "terminal_s": 24.98,
+        "status": "completed",
+        "metrics": {
+          "step": 8,
+          "elapsed_seconds": 24.452,
+          "total_tokens": 22146,
+          "tool_calls": 7,
+          "successful_tool_calls": 6,
+          "tool_errors": 1,
+          "validation_errors": 1
+        }
+      },
+      {
+        "user": 7,
+        "submit_latency_s": 0.032,
+        "submitted_at": 14196831.322653249,
+        "first_running_s": 1.14,
+        "terminal_s": 85.65,
+        "status": "completed",
+        "metrics": {
+          "step": 11,
+          "elapsed_seconds": 85.284,
+          "total_tokens": 59305,
+          "tool_calls": 10,
+          "successful_tool_calls": 8,
+          "tool_errors": 2,
+          "validation_errors": 1
+        }
+      },
+      {
+        "user": 8,
+        "submit_latency_s": 0.053,
+        "submitted_at": 14196831.322653249,
+        "first_running_s": 3.21,
+        "terminal_s": 54.5,
+        "status": "completed",
+        "metrics": {
+          "step": 13,
+          "elapsed_seconds": 54.143,
+          "total_tokens": 36217,
+          "tool_calls": 12,
+          "successful_tool_calls": 12,
+          "tool_errors": 0,
+          "validation_errors": 0
+        }
+      },
+      {
+        "user": 9,
+        "submit_latency_s": 0.128,
+        "submitted_at": 14196831.322653249,
+        "first_running_s": 2.17,
+        "terminal_s": 31.15,
+        "status": "completed",
+        "metrics": {
+          "step": 8,
+          "elapsed_seconds": 30.538,
+          "total_tokens": 20071,
+          "tool_calls": 7,
+          "successful_tool_calls": 6,
+          "tool_errors": 1,
+          "validation_errors": 0
+        }
+      },
+      {
+        "user": 10,
+        "submit_latency_s": 0.039,
+        "submitted_at": 14196831.322653249,
+        "first_running_s": 8.41,
+        "terminal_s": 49.46,
+        "status": "completed",
+        "metrics": {
+          "step": 7,
+          "elapsed_seconds": 48.506,
+          "total_tokens": 18192,
+          "tool_calls": 6,
+          "successful_tool_calls": 5,
+          "tool_errors": 1,
+          "validation_errors": 0
+        }
+      },
+      {
+        "user": 11,
+        "submit_latency_s": 0.063,
+        "submitted_at": 14196831.322653249,
+        "first_running_s": 2.17,
+        "terminal_s": 35.24,
+        "status": "completed",
+        "metrics": {
+          "step": 7,
+          "elapsed_seconds": 34.285,
+          "total_tokens": 16288,
+          "tool_calls": 6,
+          "successful_tool_calls": 6,
+          "tool_errors": 0,
+          "validation_errors": 0
+        }
+      }
+    ]
+  },
+  {
+    "users": 16,
+    "wall_seconds": 89.3,
+    "throughput_tasks_per_hour": 645.2,
+    "statuses": {
+      "completed": 16
+    },
+    "queue_wait_seconds": {
+      "mean": 2.81,
+      "max": 4.51
+    },
+    "task_latency_seconds": {
+      "p50": 41.27,
+      "max": 89.26
+    },
+    "vllm_tokens_per_sec": {
+      "prompt": 4691.5,
+      "decode": 401.1
+    },
+    "submit_latency_max_s": 0.36,
+    "tasks": [
+      {
+        "user": 0,
+        "submit_latency_s": 0.102,
+        "submitted_at": 14196917.012238653,
+        "first_running_s": 3.46,
+        "terminal_s": 23.64,
+        "status": "completed",
+        "metrics": {
+          "step": 4,
+          "elapsed_seconds": 23.41,
+          "total_tokens": 7457,
+          "tool_calls": 3,
+          "successful_tool_calls": 3,
+          "tool_errors": 0,
+          "validation_errors": 0
+        }
+      },
+      {
+        "user": 1,
+        "submit_latency_s": 0.089,
+        "submitted_at": 14196917.012238653,
+        "first_running_s": 3.46,
+        "terminal_s": 34.07,
+        "status": "completed",
+        "metrics": {
+          "step": 7,
+          "elapsed_seconds": 32.953,
+          "total_tokens": 13102,
+          "tool_calls": 6,
+          "successful_tool_calls": 5,
+          "tool_errors": 1,
+          "validation_errors": 0
+        }
+      },
+      {
+        "user": 2,
+        "submit_latency_s": 0.149,
+        "submitted_at": 14196917.012238653,
+        "first_running_s": 4.51,
+        "terminal_s": 61.07,
+        "status": "completed",
+        "metrics": {
+          "step": 13,
+          "elapsed_seconds": 60.471,
+          "total_tokens": 31595,
+          "tool_calls": 12,
+          "successful_tool_calls": 12,
+          "tool_errors": 0,
+          "validation_errors": 0
+        }
+      },
+      {
+        "user": 3,
+        "submit_latency_s": 0.116,
+        "submitted_at": 14196917.012238653,
+        "first_running_s": 3.46,
+        "terminal_s": 20.49,
+        "status": "completed",
+        "metrics": {
+          "step": 4,
+          "elapsed_seconds": 20.025,
+          "total_tokens": 6879,
+          "tool_calls": 3,
+          "successful_tool_calls": 3,
+          "tool_errors": 0,
+          "validation_errors": 0
+        }
+      },
+      {
+        "user": 4,
+        "submit_latency_s": 0.201,
+        "submitted_at": 14196917.012238653,
+        "first_running_s": 1.37,
+        "terminal_s": 66.16,
+        "status": "completed",
+        "metrics": {
+          "step": 13,
+          "elapsed_seconds": 65.416,
+          "total_tokens": 63070,
+          "tool_calls": 12,
+          "successful_tool_calls": 11,
+          "tool_errors": 1,
+          "validation_errors": 1
+        }
+      },
+      {
+        "user": 5,
+        "submit_latency_s": 0.088,
+        "submitted_at": 14196917.012238653,
+        "first_running_s": 1.37,
+        "terminal_s": 60.05,
+        "status": "completed",
+        "metrics": {
+          "step": 13,
+          "elapsed_seconds": 59.616,
+          "total_tokens": 55709,
+          "tool_calls": 12,
+          "successful_tool_calls": 11,
+          "tool_errors": 1,
+          "validation_errors": 1
+        }
+      },
+      {
+        "user": 6,
+        "submit_latency_s": 0.36,
+        "submitted_at": 14196917.012238653,
+        "first_running_s": 1.37,
+        "terminal_s": 24.7,
+        "status": "completed",
+        "metrics": {
+          "step": 7,
+          "elapsed_seconds": 24.292,
+          "total_tokens": 13150,
+          "tool_calls": 6,
+          "successful_tool_calls": 5,
+          "tool_errors": 1,
+          "validation_errors": 1
+        }
+      },
+      {
+        "user": 7,
+        "submit_latency_s": 0.214,
+        "submitted_at": 14196917.012238653,
+        "first_running_s": 1.37,
+        "terminal_s": 65.14,
+        "status": "completed",
+        "metrics": {
+          "step": 13,
+          "elapsed_seconds": 64.368,
+          "total_tokens": 75905,
+          "tool_calls": 12,
+          "successful_tool_calls": 11,
+          "tool_errors": 1,
+          "validation_errors": 1
+        }
+      },
+      {
+        "user": 8,
+        "submit_latency_s": 0.128,
+        "submitted_at": 14196917.012238653,
+        "first_running_s": 1.37,
+        "terminal_s": 63.11,
+        "status": "completed",
+        "metrics": {
+          "step": 8,
+          "elapsed_seconds": 62.835,
+          "total_tokens": 20504,
+          "tool_calls": 7,
+          "successful_tool_calls": 6,
+          "tool_errors": 1,
+          "validation_errors": 1
+        }
+      },
+      {
+        "user": 9,
+        "submit_latency_s": 0.086,
+        "submitted_at": 14196917.012238653,
+        "first_running_s": 4.51,
+        "terminal_s": 25.75,
+        "status": "completed",
+        "metrics": {
+          "step": 4,
+          "elapsed_seconds": 25.48,
+          "total_tokens": 7633,
+          "tool_calls": 3,
+          "successful_tool_calls": 3,
+          "tool_errors": 0,
+          "validation_errors": 0
+        }
+      },
+      {
+        "user": 10,
+        "submit_latency_s": 0.106,
+        "submitted_at": 14196917.012238653,
+        "first_running_s": 1.37,
+        "terminal_s": 41.27,
+        "status": "completed",
+        "metrics": {
+          "step": 13,
+          "elapsed_seconds": 40.545,
+          "total_tokens": 42575,
+          "tool_calls": 12,
+          "successful_tool_calls": 11,
+          "tool_errors": 1,
+          "validation_errors": 1
+        }
+      },
+      {
+        "user": 11,
+        "submit_latency_s": 0.14,
+        "submitted_at": 14196917.012238653,
+        "first_running_s": 4.51,
+        "terminal_s": 41.27,
+        "status": "completed",
+        "metrics": {
+          "step": 9,
+          "elapsed_seconds": 40.169,
+          "total_tokens": 17208,
+          "tool_calls": 8,
+          "successful_tool_calls": 7,
+          "tool_errors": 1,
+          "validation_errors": 0
+        }
+      },
+      {
+        "user": 12,
+        "submit_latency_s": 0.152,
+        "submitted_at": 14196917.012238653,
+        "first_running_s": 3.46,
+        "terminal_s": 61.07,
+        "status": "completed",
+        "metrics": {
+          "step": 13,
+          "elapsed_seconds": 60.611,
+          "total_tokens": 32567,
+          "tool_calls": 12,
+          "successful_tool_calls": 12,
+          "tool_errors": 0,
+          "validation_errors": 0
+        }
+      },
+      {
+        "user": 13,
+        "submit_latency_s": 0.16,
+        "submitted_at": 14196917.012238653,
+        "first_running_s": 3.46,
+        "terminal_s": 26.79,
+        "status": "completed",
+        "metrics": {
+          "step": 4,
+          "elapsed_seconds": 25.667,
+          "total_tokens": 7607,
+          "tool_calls": 3,
+          "successful_tool_calls": 3,
+          "tool_errors": 0,
+          "validation_errors": 0
+        }
+      },
+      {
+        "user": 14,
+        "submit_latency_s": 0.109,
+        "submitted_at": 14196917.012238653,
+        "first_running_s": 1.37,
+        "terminal_s": 89.26,
+        "status": "completed",
+        "metrics": {
+          "step": 13,
+          "elapsed_seconds": 88.865,
+          "total_tokens": 46143,
+          "tool_calls": 12,
+          "successful_tool_calls": 11,
+          "tool_errors": 1,
+          "validation_errors": 1
+        }
+      },
+      {
+        "user": 15,
+        "submit_latency_s": 0.237,
+        "submitted_at": 14196917.012238653,
+        "first_running_s": 4.51,
+        "terminal_s": 22.59,
+        "status": "completed",
+        "metrics": {
+          "step": 4,
+          "elapsed_seconds": 21.346,
+          "total_tokens": 7073,
+          "tool_calls": 3,
+          "successful_tool_calls": 3,
+          "tool_errors": 0,
+          "validation_errors": 0
+        }
+      }
+    ]
+  }
+]

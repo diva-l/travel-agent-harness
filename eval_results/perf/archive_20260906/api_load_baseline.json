@@ -1,0 +1,162 @@
+[
+  {
+    "users": 8,
+    "wall_seconds": 179.0,
+    "throughput_tasks_per_hour": 160.9,
+    "statuses": {
+      "exhausted": 5,
+      "completed": 3
+    },
+    "queue_wait_seconds": {
+      "mean": 76.32,
+      "max": 159.86
+    },
+    "task_latency_seconds": {
+      "p50": 126.5,
+      "max": 178.99
+    },
+    "vllm_tokens_per_sec": {
+      "prompt": 4010.2,
+      "decode": 79.7
+    },
+    "submit_latency_max_s": 0.103,
+    "tasks": [
+      {
+        "user": 0,
+        "submit_latency_s": 0.029,
+        "submitted_at": 22744079.129649103,
+        "first_running_s": 16.47,
+        "terminal_s": 38.01,
+        "status": "exhausted",
+        "metrics": {
+          "step": 13,
+          "elapsed_seconds": 37.141,
+          "total_tokens": 134595,
+          "tool_calls": 18,
+          "successful_tool_calls": 18,
+          "tool_errors": 0,
+          "validation_errors": 0
+        }
+      },
+      {
+        "user": 1,
+        "submit_latency_s": 0.056,
+        "submitted_at": 22744079.129649103,
+        "first_running_s": 107.2,
+        "terminal_s": 126.5,
+        "status": "completed",
+        "metrics": {
+          "step": 8,
+          "elapsed_seconds": 29.822,
+          "total_tokens": 77236,
+          "tool_calls": 24,
+          "successful_tool_calls": 23,
+          "tool_errors": 1,
+          "validation_errors": 1
+        }
+      },
+      {
+        "user": 2,
+        "submit_latency_s": 0.036,
+        "submitted_at": 22744079.129649103,
+        "first_running_s": 36.98,
+        "terminal_s": 56.38,
+        "status": "completed",
+        "metrics": {
+          "step": 3,
+          "elapsed_seconds": 28.453,
+          "total_tokens": 30010,
+          "tool_calls": 17,
+          "successful_tool_calls": 17,
+          "tool_errors": 0,
+          "validation_errors": 0
+        }
+      },
+      {
+        "user": 3,
+        "submit_latency_s": 0.074,
+        "submitted_at": 22744079.129649103,
+        "first_running_s": 155.83,
+        "terminal_s": 168.93,
+        "status": "exhausted",
+        "metrics": {
+          "step": 13,
+          "elapsed_seconds": 22.655,
+          "total_tokens": 109552,
+          "tool_calls": 24,
+          "successful_tool_calls": 22,
+          "tool_errors": 2,
+          "validation_errors": 2
+        }
+      },
+      {
+        "user": 4,
+        "submit_latency_s": 0.042,
+        "submitted_at": 22744079.129649103,
+        "first_running_s": 79.78,
+        "terminal_s": 97.06,
+        "status": "exhausted",
+        "metrics": {
+          "step": 9,
+          "elapsed_seconds": 25.908,
+          "total_tokens": 81427,
+          "tool_calls": 40,
+          "successful_tool_calls": 18,
+          "tool_errors": 22,
+          "validation_errors": 0
+        }
+      },
+      {
+        "user": 5,
+        "submit_latency_s": 0.038,
+        "submitted_at": 22744079.129649103,
+        "first_running_s": 43.11,
+        "terminal_s": 151.79,
+        "status": "exhausted",
+        "metrics": {
+          "step": 13,
+          "elapsed_seconds": 114.057,
+          "total_tokens": 153843,
+          "tool_calls": 27,
+          "successful_tool_calls": 24,
+          "tool_errors": 3,
+          "validation_errors": 0
+        }
+      },
+      {
+        "user": 6,
+        "submit_latency_s": 0.026,
+        "submitted_at": 22744079.129649103,
+        "first_running_s": 11.35,
+        "terminal_s": 27.76,
+        "status": "exhausted",
+        "metrics": {
+          "step": 13,
+          "elapsed_seconds": 26.892,
+          "total_tokens": 100404,
+          "tool_calls": 13,
+          "successful_tool_calls": 13,
+          "tool_errors": 0,
+          "validation_errors": 0
+        }
+      },
+      {
+        "user": 7,
+        "submit_latency_s": 0.103,
+        "submitted_at": 22744079.129649103,
+        "first_running_s": 159.86,
+        "terminal_s": 178.99,
+        "status": "completed",
+        "metrics": {
+          "step": 7,
+          "elapsed_seconds": 27.425,
+          "total_tokens": 44976,
+          "tool_calls": 16,
+          "successful_tool_calls": 15,
+          "tool_errors": 1,
+          "validation_errors": 1
+        }
+      }
+    ]
+  }
+]
