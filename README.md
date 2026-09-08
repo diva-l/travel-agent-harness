@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <a href="tests/"><img src="https://img.shields.io/badge/tests-84%20passed-brightgreen" alt="tests"></a>
+  <a href="tests/"><img src="https://img.shields.io/badge/tests-91%20passed-brightgreen" alt="tests"></a>
   <a href="pyproject.toml"><img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="python"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="license"></a>
 </p>
@@ -20,7 +20,7 @@
 
 一个可实际使用的出行规划 Agent 系统：用户输入自然语言需求（出发地、目的地、天数、预算、偏好），系统自动完成查天气、搜地点、比车次、算路线的多轮工具调用，产出有证据支撑的逐日行程，并在前端渲染为可交互的地图路线。
 
-与常见的「Prompt + 大模型 API」旅行 Demo 不同，本项目有两个核心亮点：
+与常见的「Prompt + 大模型 API」旅行 Demo 相比，这个项目的不同主要在两点：
 
 1. **自己训练的规划模型**。Planner 不是调用商用大模型 API，而是基于 Qwen3-4B 经过 **SFT → Agentic RL（GRPO）** 后训练得到的 **TravelPlanner-4B**：SFT 阶段学习工具调用协议与格式，RL 阶段在真实工具循环里以过程奖励（schema 合规、工具效率、阶段感知、LLM judge 等六维子奖励）优化规划策略。
 2. **Harness 运行时约束**。模型不直接面对用户，而是运行在 Harness（运行时约束框架）内：预算上限、Schema 校验、Checkpoint、全量 Trace、人工审批、证据门禁全部由框架强制执行。模型的每一次工具调用都可回溯、可恢复、可从任一检查点分叉复跑。
@@ -89,7 +89,7 @@
 
 - **离线 fixtures**（默认）：确定性演示数据，不联网、不需要任何 key，用于测试与快速体验
 - **真实数据**：地理类四工具走高德 Web 服务，检索类两工具走 Firecrawl，配置见[快速开始](#快速开始)第 5 步
-- **火车 / 航班没有接真实票务 API**——真实原因很简单：火车票没有公开的官方 API，第三方票务接口按调用计费且价格不低，对演示和评测场景不划算，因此用 LLM 模拟器生成格式一致的票务数据；若要接真实票务，需自行实现 handler 并保持契约不变
+- **火车 / 航班没有接真实票务 API**：火车票没有公开的官方 API，第三方票务接口按调用计费且价格不低，对演示和评测场景不划算，因此用 LLM 模拟器生成格式一致的票务数据；若要接真实票务，需自行实现 handler 并保持契约不变
 
 ## Harness 设计详解
 
@@ -171,7 +171,7 @@
 
 全开训练环境对齐开关后，TravelPlanner-4B 在必需工具覆盖率上追平 DeepSeek，RL 混合分与 LLM judge 分反超，评测结论与训练侧 80 条 judge 结果一致、可复现。逐条明细：[eval_results/compare_report.md](eval_results/compare_report.md)。
 
-### 工程压测（对齐版，2026-09-08）
+### 工程压测（2026-09-08）
 
 | 结论 | 数据 |
 |---|---|
@@ -182,7 +182,7 @@
 | 护栏有效 | schema-echo 场均拦截 0.6 次全部自愈；重复阻断/强制收尾/作答机会按训练契约触发 |
 | Prefix cache | 命中率 87.3%，多轮 prefill 的主要减压阀 |
 
-完整报告：[eval_results/perf/perf_report.md](eval_results/perf/perf_report.md)（对齐前旧版归档于 `eval_results/perf/archive_20260906/`）。
+完整报告：[eval_results/perf/perf_report.md](eval_results/perf/perf_report.md)（早期数据归档于 `eval_results/perf/archive_20260906/`）。
 
 ## 快速开始
 
