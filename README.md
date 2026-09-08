@@ -17,8 +17,8 @@
 
 **30 秒速览**
 
-- **是什么**：Agentic RL 训练的 Qwen3-4B Planner 在受约束的工具循环里查天气、搜地点、比车次、算路线，产出有证据支撑的逐日行程
-- **Harness 做什么**：边界控制、Schema 校验、Checkpoint、Trace 与人工审批
+- **是什么**：一个真正能用的出行规划 Agent——查天气、搜地点、比车次、算路线，产出有证据支撑的逐日行程与可交互路线图
+- **两大核心亮点**：① 规划模型不是调 API，而是我们基于 Qwen3-4B 通过 **SFT + Agentic RL 后训练**自研的 **TravelPlanner-4B**；② 模型运行在一套自研的 **Harness**（运行时约束框架）里，行为有边界、过程可追溯、结果可评测
 - **证据**：真实 API 评测打平 DeepSeek（必需工具覆盖率 0.775）· 压测 645 任务/时 · 84 个单元测试全绿
 
 ## 界面预览
@@ -27,13 +27,29 @@
 
 更多截图见 [docs/screenshots/](docs/screenshots/)。
 
+## 与传统方案的区别
+
+市面上大多数「AI 旅行规划」项目，本质是写一段 Prompt 直接调用通用大模型 API——模型行为靠提示词约定，没有任何强制手段。本项目的思路完全不同：**模型自己训练，运行时由 Harness 强制约束**。
+
+| 维度 | 传统方案：Prompt + 大模型 API | 本项目：自训练模型 + Harness |
+|---|---|---|
+| **模型** | 通用大模型（GPT / DeepSeek 等），能力黑盒、行为靠提示词引导 | **TravelPlanner-4B**：Qwen3-4B 基座 → SFT 学习工具调用格式 → Agentic RL 在真实工具循环里优化规划策略 |
+| **行为边界** | 无。模型可以无限循环、重复调用、超预算运行 | Harness 有界 Agent Loop：步数 / 墙钟 / 累计 Token / 工具调用数**四项硬预算**，完全相同调用第 4 次直接阻断 |
+| **可靠性** | 失败即终止，无中间状态 | 每轮写入 SQLite **Checkpoint**，崩溃可恢复、可从任一 Checkpoint **Fork 复跑** |
+| **可观测性** | 黑盒，只看到最终回答 | **全量 Trace**：模型轮次、工具调用、状态迁移、预算消耗、失败原因逐条落库，可回放审计 |
+| **输出质量** | 模型说什么就是什么，可能凭空编造 | **证据门禁**：零取证的空想答案直接拒收；Report 阶段做 Schema 校验的结构化转换 |
+| **安全** | 无防护 | 工具级输入/输出 **Guardrail**；副作用工具声明 `requires_approval` 后任务暂停，等待**人工审批**放行 |
+| **评测** | 凭感觉演示 | 确定性抽样测试集 + 四路对比（基座 / SFT / RL / DeepSeek）+ 逐条数据全部公开可复跑 |
+
+Harness 层做了大量工程工作：双协议解析（原生 Function Calling + 训练模型的 `<tool_call>` 文本协议，带 json_repair 容错）、训练环境对齐开关（把 RL 训练循环的终局规则与观测分布完整搬进运行时，保证评测结论可复现）、模型请求指数退避重试、截断输出自动放大预算重试、高德 QPS 限流吸收、并发 worker 池与有界队列背压——这些都是在真实压测和评测中逐项打磨出来的，见[评测结果](#评测结果)。
+
 ## 评测结果
 
 测试集：[eval_results/test_final.jsonl](eval_results/test_final.jsonl) 80 条中确定性抽样 10 条（指纹 `b7d3c735…e0ef4303`）；工具链为真实外部 API；judge=deepseek-v4-flash；运行环境已全开训练对齐开关。脚本与逐条数据在 [eval_results/](eval_results/README.md)。
 
 ### 基座 → SFT → RL 四路对比（DeepSeek 作参照）
 
-| 指标 | 基座 Qwen3-4B | SFT ckpt-420 | **RL ckpt-150** | DeepSeek |
+| 指标 | 基座 Qwen3-4B | SFT 阶段 | **TravelPlanner-4B (RL)** | DeepSeek |
 |---|---:|---:|---:|---:|
 | 完成率 | 1.0 | 0.8 | 0.9 | 0.9 |
 | 必需工具覆盖率 | 0.65 | 0.69 | **0.775** | **0.775** |
@@ -42,7 +58,7 @@
 | RL 混合分（phase3） | 0.419 | 0.223 | **0.480** | 0.461 |
 | LLM judge | 0.48 | 0.27 | **0.60** | 0.57 |
 
-**RL-150 是最强本地模型**，与训练侧 80 条 judge 结论一致；全开训练环境对齐开关后，本地 4B 模型在必需工具覆盖率上追平 DeepSeek，评测结论与训练分布严格对齐、可复现。逐条明细：[eval_results/compare_report.md](eval_results/compare_report.md)。
+**TravelPlanner-4B 是最强本地模型**，与训练侧 80 条 judge 结论一致；全开训练环境对齐开关后，本地 4B 模型在必需工具覆盖率上追平 DeepSeek，评测结论与训练分布严格对齐、可复现。逐条明细：[eval_results/compare_report.md](eval_results/compare_report.md)。
 
 ### 工程压测（对齐版，2026-09-08）
 
@@ -145,7 +161,7 @@ TRAVEL_HARNESS_FIRECRAWL_KEY=<your-key>
 
 ```text
 models/
-└── checkpoint-150/        # RL 最终权重（Qwen3-4B，bf16）
+└── checkpoint-150/        # TravelPlanner-4B 最终权重（Qwen3-4B 基座，SFT + RL，bf16）
 ```
 
 用 vLLM 暴露 OpenAI-compatible API（RTX 5090 需 `VLLM_USE_FLASHINFER_SAMPLER=0`，详见 [docs/deploy-vllm-server.md](docs/deploy-vllm-server.md)）：

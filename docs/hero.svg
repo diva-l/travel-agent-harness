@@ -20,7 +20,7 @@
   <text x="64" y="152" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="56" font-weight="700" fill="#E6EDF3">TravelAgentHarness</text>
 
   <text x="64" y="206" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="22" fill="#C9D1D9">受限、可追溯、可评测的出行规划 Agent Harness</text>
-  <text x="64" y="240" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="22" fill="#8B949E">Qwen3-4B RL Planner × 有界工具循环 × 全量 Trace</text>
+  <text x="64" y="240" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="22" fill="#8B949E">自训练 TravelPlanner-4B（SFT + RL）× 有界工具循环 × 全量 Trace</text>
 
   <text x="64" y="290" font-family="ui-monospace, SFMono-Regular, 'Cascadia Code', Consolas, monospace" font-size="16" fill="#8B949E">84 tests passed · Python 3.11+ · FastAPI + Vue 3 · MIT</text>
 
