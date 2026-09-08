@@ -9,17 +9,46 @@
 </p>
 
 <p align="center">
-  <a href="#快速开始">快速开始</a> ·
+  <a href="#系统架构">系统架构</a> ·
+  <a href="#harness-设计详解">Harness 设计</a> ·
   <a href="#评测结果">评测结果</a> ·
-  <a href="eval_results/perf/perf_report.md">压测报告</a> ·
+  <a href="#快速开始">快速开始</a> ·
   <a href="#文档索引">文档</a>
 </p>
 
-**30 秒速览**
+## 项目简介
 
-- **是什么**：一个真正能用的出行规划 Agent——查天气、搜地点、比车次、算路线，产出有证据支撑的逐日行程与可交互路线图
-- **两大核心亮点**：① 规划模型不是调 API，而是我们基于 Qwen3-4B 通过 **SFT + Agentic RL 后训练**自己训练的 **TravelPlanner-4B**；② 模型运行在一套 Harness（运行时约束框架）里，行为有边界、过程可追溯、结果可评测
-- **证据**：真实 API 评测打平 DeepSeek（必需工具覆盖率 0.775）· 并发调优后吞吐从 42.6 → 645 tasks/h · Harness 开销实测≈0
+一个可实际使用的出行规划 Agent 系统：用户输入自然语言需求（出发地、目的地、天数、预算、偏好），系统自动完成查天气、搜地点、比车次、算路线的多轮工具调用，产出有证据支撑的逐日行程，并在前端渲染为可交互的地图路线。
+
+与常见的「Prompt + 大模型 API」旅行 Demo 不同，本项目有两个核心亮点：
+
+1. **自己训练的规划模型**。Planner 不是调用商用大模型 API，而是基于 Qwen3-4B 经过 **SFT → Agentic RL（GRPO）** 后训练得到的 **TravelPlanner-4B**：SFT 阶段学习工具调用协议与格式，RL 阶段在真实工具循环里以过程奖励（schema 合规、工具效率、阶段感知、LLM judge 等六维子奖励）优化规划策略。
+2. **Harness 运行时约束**。模型不直接面对用户，而是运行在 Harness（运行时约束框架）内：预算上限、Schema 校验、Checkpoint、全量 Trace、人工审批、证据门禁全部由框架强制执行。模型的每一次工具调用都可回溯、可恢复、可从任一检查点分叉复跑。
+
+本仓库包含 **Harness 内核 + 评测体系 + 产品化前端**；训练代码与模型权重不在本仓库（见[模型权重](#模型权重)）。
+
+## 系统架构
+
+单一执行内核设计：CLI、Web 服务、离线评测三个入口共享同一个 `AgentRuntime`，不另造第二套 Agent 逻辑——页面上每个运行时状态都能回溯到同一套 Runtime 和 SQLite 状态。
+
+```text
+                        用户需求（自然语言）
+                              │
+        ┌──────────┬──────────┴─────────┐
+        │ CLI      │ Web UI             │ 离线评测        ← 三个入口，同一内核
+        │          │ Vue 3 + FastAPI/SSE│ evals/ + eval_results/
+        └──────────┴──────────┬─────────┘
+                              │
+                    AgentRuntime（唯一执行内核）
+                    ├─ 协议层    双协议解析，训练分布对齐
+                    ├─ 预算护栏  4 项硬预算 · Guardrail · 人工审批
+                    ├─ 工具层    8 个训练契约工具，三种数据源可切换
+                    └─ 持久化    每轮 SQLite Checkpoint + 全量 Trace
+                              │
+                    Report Model（证据约束的结构化转换，不参与规划）
+                              │
+                    前端交互路线图（地图为主、文字为辅）
+```
 
 ## 界面预览
 
@@ -29,7 +58,7 @@
 
 ## 与传统方案的区别
 
-市面上大多数「AI 旅行规划」项目，本质是写一段 Prompt 直接调用通用大模型 API——模型行为靠提示词约定，没有任何强制手段。本项目的思路完全不同：**模型自己训练，运行时由 Harness 强制约束**。
+市面上大多数「AI 旅行规划」项目，本质是写一段 Prompt 直接调用通用大模型 API——模型行为靠提示词约定，没有任何强制手段。本项目的思路是：**模型自己训练，运行时由 Harness 强制约束**。
 
 | 维度 | 传统方案：Prompt + 大模型 API | 本项目：自训练模型 + Harness |
 |---|---|---|
@@ -41,57 +70,54 @@
 | **安全** | 无防护 | 工具级输入/输出 **Guardrail**；副作用工具声明 `requires_approval` 后任务暂停，等待**人工审批**放行 |
 | **评测** | 凭感觉演示 | 确定性抽样测试集 + 四路对比（基座 / SFT / RL / DeepSeek）+ 逐条数据全部公开可复跑 |
 
-Harness 层做了大量工程工作：双协议解析（原生 Function Calling + 训练模型的 `<tool_call>` 文本协议，带 json_repair 容错）、训练环境对齐开关（把 RL 训练循环的终局规则与观测分布完整搬进运行时，保证评测结论可复现）、模型请求指数退避重试、截断输出自动放大预算重试、高德 QPS 限流吸收、并发 worker 池与有界队列背压——这些都是在真实压测和评测中逐项打磨出来的，见[评测结果](#评测结果)。
+## Harness 设计详解
 
-## 评测结果
+### 运行时内核：有界状态机
 
-测试集：[eval_results/test_final.jsonl](eval_results/test_final.jsonl) 80 条中确定性抽样 10 条（指纹 `b7d3c735…e0ef4303`）；工具链为真实外部 API；judge=deepseek-v4-flash；运行环境已全开训练对齐开关。脚本与逐条数据在 [eval_results/](eval_results/README.md)。
+- **六态状态机**：`created → running → (waiting_approval) → completed / exhausted / failed`，每次迁移落 Trace
+- **四项硬预算**：步数 13 轮（与训练契约 `max_turns=13` 对齐）、墙钟秒数、累计 Token、物理工具调用数 40 次，任一耗尽任务进入 `exhausted` 而非失控运行
+- **三阶段工具执行**：Phase 1 顺序门禁（预算 / 重复 / Schema / 审批检查，不改消息）→ Phase 2 线程池**并行执行**（纯函数、无副作用）→ Phase 3 按原始调用顺序**有序合并**结果。既拿到并行性能，又不破坏训练契约要求的消息顺序
+- **重复循环检测**：对每轮「调用 + 观测」计算 SHA-256 轮签名，连续 3 轮完全相同先注入一次训练原文的强制作答机会，再犯即终止——与 RL 训练循环的重复处理分支逐字一致
+- **每轮 Checkpoint**：每轮结束将整份状态快照写入 SQLite；崩溃后 `resume` 恢复，`fork` 可从任一 Checkpoint 分叉出新任务复跑
 
-### 基座 → SFT → RL 四路对比（DeepSeek 作参照）
+### 协议层：让 RL 模型待在训练分布内
 
-| 指标 | 基座 Qwen3-4B | SFT 阶段 | **TravelPlanner-4B (RL)** | DeepSeek |
-|---|---:|---:|---:|---:|
-| 完成率 | 1.0 | 0.8 | 0.9 | 0.9 |
-| 必需工具覆盖率 | 0.65 | 0.69 | **0.775** | **0.775** |
-| 工具错误率 | 0.02 | 0.34 | 0.12 | 0.05 |
-| 重复调用阻断 | 0 | 12 | **1** | 0 |
-| RL 混合分（phase3） | 0.419 | 0.223 | **0.480** | 0.461 |
-| LLM judge | 0.48 | 0.27 | **0.60** | 0.57 |
+- **双协议**：原生 Function Calling（托管 API），或训练模型的 `<tool_call>` / `<answer>` 文本协议
+- **tagged 解析器完整复刻训练循环的容错语义**：`<tool_calls>` 复数包裹、` ``` ` 代码围栏、`{"tool"/"parameters"}`、`{"tool_name"/"tool_input"}` 等六种变体、未闭合 `<answer>` 视为最终答案、json_repair 兜底
+- **解析失败不静默重采样**：把训练原文引导消息（如「请先通过 tool_call 调用至少一个工具…」）注入对话后重问，模型收到的是它训练时见过的确切措辞
+- **观测翻译**：Runtime 内部统一保存 provider-neutral JSON，仅在协议边界把 tool 消息渲染回训练侧 `<tool_response>` 格式（json2md + 头尾各 2500 字截断——尾部常含价格与结论，必须保尾）
+- **截断自愈**：`finish_reason=length` 的截断输出自动以 1.5× 预算重发一次，让闭合标签落地
 
-**TravelPlanner-4B 是最强本地模型**，与训练侧 80 条 judge 结论一致；全开训练环境对齐开关后，本地 4B 模型在必需工具覆盖率上追平 DeepSeek，评测结论与训练分布严格对齐、可复现。逐条明细：[eval_results/compare_report.md](eval_results/compare_report.md)。
+### 工具层：契约逐字一致，实现可替换
 
-### 工程压测（对齐版，2026-09-08）
+- 8 个工具的 name / description / JSON Schema 与 RL 训练环境**逐字一致**——训练过的模型不会因契约漂移而出分布
+- 每次调用过完整 JSON Schema 校验（required / enum / 数值范围 / 嵌套数组元素类型）
+- **schema-echo 护栏**：模型把工具定义当参数复读时（tagged RL 模型在字段式输入下的典型 OOD 失败模式），收到明确的中文改错消息而非含糊报错——压测中场均拦截 0.6 次，全部自愈
+- **data_source 输出护栏**：任何工具结果必须标明数据来源（`demo_fixture` / `amap_web_service` / `firecrawl_*` / `llm_ticket_simulator`），证据边界贯穿到最终报告
+- **三种数据源热切换**：确定性离线 fixtures（测试与演示）↔ 高德 Web 服务（真实地理四工具）↔ Firecrawl（真实网页检索）；高德并发 QPS 限流（infocode 10021）由 provider 级指数退避（0.4/0.8/1.6s）吸收为延迟而非失败
 
-| 结论 | 数据 |
-|---|---|
-| 模型不是瓶颈 | 裸 vLLM c8 首轮 2.3s / 6101 tok/s；Agent 循环下 GPU 均值仅 12~24% |
-| 瓶颈在外部工具链 | 工具耗时为模型的 6~9 倍（含训练同款 LLM 模拟器往返） |
-| Harness 开销 ≈ 0 | 逐任务「墙钟 − 模型 − 工具」均值 -11%~+0.7% |
-| 并发甜区 | c4 吞吐见顶 128 tasks/h；HTTP 路径 worker=16 时 **645 tasks/h、queueing ~3s**（worker=2 时 42.6 tasks/h、queueing 286s，15×） |
-| 护栏有效 | schema-echo 场均拦截 0.6 次全部自愈；重复阻断/强制收尾/作答机会按训练契约触发 |
-| Prefix cache | 命中率 87.3%，多轮 prefill 的主要减压阀 |
+### 持久化与可追溯
 
-完整报告：[eval_results/perf/perf_report.md](eval_results/perf/perf_report.md)（对齐前旧版归档于 `eval_results/perf/archive_20260906/`）。
+- SQLite（WAL 模式）三表：`tasks` / `checkpoints` / `traces`；Checkpoint 是整份状态快照，Trace 按 `(task_id, id)` 索引支持增量游标拉取（SSE 轮询用）
+- 20 余种 Trace 事件：`model_request` / `model_response` / `tool_started` / `tool_succeeded` / `tool_blocked` / `state_transition` / `budget_exhausted` / `approval_required` …
+- 写入前自动脱敏：`sk-*` 密钥、`Bearer` token、`api_key` 字段统一替换为 `[REDACTED]`
 
-## 这是什么
+### Report 层：规划与展示分离
 
-主链路：用户需求 → `AgentRuntime`（唯一执行内核）→ Agentic RL Planner 的工具循环 → Report Model 做证据约束的结构化转换 → 前端交互路线图。Evaluation 只是复用 Runtime 的离线入口，不另造 Agent 逻辑；Web 层没有自己的 Agent Loop，页面上每个运行时状态都能回溯到同一套 Runtime 和 SQLite 状态。
+- Planner 只产出规划文本；Report Model（temperature=0，JSON mode）把结果整理为受校验的路线 JSON——**不重新规划**，失败保留原文
+- `normalize_report` 强规范化：坐标范围校验（非法置空）、站点类别白名单、任一站点缺坐标时整体降级为示意地图（`map_kind=schematic`）、alerts / budget 条数上限
+- 高德模式下对站点做 `poi_snapshot` 富化（真实图片 / 地址，best-effort，失败静默跳过）
 
-本仓库是 **Harness + 评测 + 产品化前端**，不含训练代码与模型权重（见[模型权重](#模型权重)）。
+### Web/API 层
 
-## 核心特性
+- FastAPI 全异步边界：`POST /api/plans` 202 异步受理，`GET /api/plans/{id}/events` 以 SSE 每 0.65s 推送增量 Trace 与状态
+- **并发模型**：worker 线程池（默认 2，可配）+ `BoundedSemaphore` 有界队列，超额直接 **503 + `Retry-After: 30`** fail-fast，不静默排队
+- worker 内未捕获异常会把任务落库为 `FAILED` 并追加 `runtime_failed` Trace——异常不丢状态
+- **前端输入清洗护栏**：自由文本剥离标记符号、按数据集口语句式拼接（相对日期、逗号短句、人均预算），避免字段式模板把 RL 模型拖出训练分布
 
-**Agent 运行时**
-- 双模型协议：原生 Function Calling，或训练模型的 `<tool_call>` / `<answer>` 文本协议（json_repair 容错、`<tool_calls>` 复数包裹、`tool`/`parameters` 变体、未闭合 `<answer>`），Observation 按训练侧格式翻译为 `<tool_response>`（json2md + 头尾各 2500 字截断）
-- 有界 Agent Loop：步数 / 墙钟 / 累计 Token / 工具调用数四项预算，阻断第 4 次完全相同调用
-- 可靠执行：模型请求指数退避重试；截断输出（finish_reason=length）自动放大预算重试；每轮写入 SQLite Checkpoint，可恢复、可从任一 Checkpoint Fork 复跑
-- 可观测性：模型轮次、工具调用、状态迁移、预算消耗、失败原因全量 Trace，自动脱敏疑似 API Key
-- 安全边界：工具级输入/输出 Guardrail（含 schema-echo 护栏：模型复读工具定义时收到明确改错消息）；副作用工具可声明 `requires_approval`，任务暂停等待人工审批
-- 证据门禁：零取证的空想答案直接拒收
+## 训练环境对齐
 
-**训练环境对齐**（评测 RL 模型时建议全开，默认关）
-
-把 RL 训练循环的终局规则与观测分布完整搬进 Harness：
+评测 RL 模型时建议全开（默认关）。原因：RL Planner 只见过训练侧的观测分布与终局规则——训练中火车票根本不是真实 API，而是 LLM 模拟器生成的；网页不是原始 markdown，而是经 LLM 提炼的 JSON。评测时若不把这套环境搬过来，测的就不是模型的真实水平。
 
 | 开关 | 作用 |
 |---|---|
@@ -105,12 +131,35 @@ Harness 层做了大量工程工作：双协议解析（原生 Function Calling 
 
 解析失败/空输出时模型收到训练原文引导消息并被重问，不再静默重采样。
 
-**数据与产品化**
-- 8 个工具契约与训练 Prompt 逐字一致（search / visit / weather_search / flights_search / train_tickets_search / poi_search / around_search / route_planning），返回值带 `data_source` 标记
-- 可切换数据源：离线演示 fixtures ↔ 高德 Web 服务（真实地理数据）+ Firecrawl（真实检索）；高德并发 QPS 限流（infocode 10021）由 provider 级指数退避重试吸收
-- 前端按数据集口语分布拼接触发词（相对日期、逗号短句、人均预算），自由文本经清洗护栏，避免字段式模板把 RL 模型拖出训练分布
-- FastAPI 任务 / 状态 / Trace / SSE 实时事件 / 审批接口；Vue 3 交互路线图（地图主、文字辅）；并发 worker 池可配置（`TRAVEL_HARNESS_API_WORKERS`），有界队列 503 背压
-- Planner 只产出规划；Report Model 不重新规划，只把结果整理为受校验的路线 JSON，失败保留原文
+## 评测结果
+
+测试集：[eval_results/test_final.jsonl](eval_results/test_final.jsonl) 80 条中确定性抽样 10 条（指纹 `b7d3c735…e0ef4303`）；工具链为真实外部 API（高德 + Firecrawl）；judge=deepseek-v4-flash；运行环境已全开训练对齐开关。脚本与逐条数据在 [eval_results/](eval_results/README.md)。
+
+### 基座 → SFT → RL 四路对比（DeepSeek 作参照）
+
+| 指标 | 基座 Qwen3-4B | SFT 阶段 | **TravelPlanner-4B (RL)** | DeepSeek |
+|---|---:|---:|---:|---:|
+| 完成率 | 1.0 | 0.8 | 0.9 | 0.9 |
+| 必需工具覆盖率 | 0.65 | 0.69 | **0.775** | **0.775** |
+| 工具错误率 | 0.02 | 0.34 | 0.12 | 0.05 |
+| 重复调用阻断 | 0 | 12 | **1** | 0 |
+| RL 混合分（phase3） | 0.419 | 0.223 | **0.480** | 0.461 |
+| LLM judge | 0.48 | 0.27 | **0.60** | 0.57 |
+
+全开训练环境对齐开关后，TravelPlanner-4B 在必需工具覆盖率上追平 DeepSeek，RL 混合分与 LLM judge 分反超，评测结论与训练侧 80 条 judge 结果一致、可复现。逐条明细：[eval_results/compare_report.md](eval_results/compare_report.md)。
+
+### 工程压测（对齐版，2026-09-08）
+
+| 结论 | 数据 |
+|---|---|
+| 模型不是瓶颈 | 裸 vLLM c8 首轮 2.3s / 6101 tok/s；Agent 循环下 GPU 均值仅 12~24% |
+| 瓶颈在外部工具链 | 工具耗时为模型的 6~9 倍（含训练同款 LLM 模拟器往返） |
+| Harness 开销 ≈ 0 | 逐任务「墙钟 − 模型 − 工具」均值 -11%~+0.7% |
+| 并发甜区 | c4 吞吐见顶 128 tasks/h；HTTP 路径 worker=16 时 **645 tasks/h、queueing ~3s**（worker=2 时 42.6 tasks/h、queueing 286s，15×） |
+| 护栏有效 | schema-echo 场均拦截 0.6 次全部自愈；重复阻断/强制收尾/作答机会按训练契约触发 |
+| Prefix cache | 命中率 87.3%，多轮 prefill 的主要减压阀 |
+
+完整报告：[eval_results/perf/perf_report.md](eval_results/perf/perf_report.md)（对齐前旧版归档于 `eval_results/perf/archive_20260906/`）。
 
 ## 快速开始
 
@@ -181,14 +230,20 @@ TRAVEL_HARNESS_PLANNER_MODE=vllm    # 自动填入 tagged 协议、base_url、�
 ## 仓库结构
 
 ```text
-├── src/travel_agent_harness/   # Harness 内核：runtime / protocol / tools / store / api / reporting
-│   ├── api/                    # FastAPI 服务（任务、SSE、审批、Inspector）
-│   └── web_dist/               # 前端构建产物（pip 用户无需 Node）
+├── src/travel_agent_harness/   # Harness 内核
+│   ├── runtime.py              #   唯一执行内核：有界状态机、三阶段工具执行、重复循环检测
+│   ├── protocol.py             #   双协议解析、观测翻译、训练原文引导消息
+│   ├── tools.py                #   8 个训练契约工具、Schema 校验、Guardrail
+│   ├── store.py                #   SQLite 持久化：Checkpoint / Trace / 恢复 / Fork
+│   ├── reporting.py            #   Report Model 结构化转换与规范化
+│   ├── amap.py / firecrawl.py  #   真实数据源 provider（高德 / Firecrawl）
+│   ├── simulator.py / extractor.py  # 训练对齐：LLM 票务模拟器、网页提炼器
+│   ├── api/                    #   FastAPI 服务（任务、SSE、审批、Inspector）
+│   └── web_dist/               #   前端构建产物（pip 用户无需 Node）
 ├── frontend/                   # Vue 3 + Vite + TypeScript 源码（改前端才需要 Node）
 ├── tests/                      # 84 个单元测试（unittest，无外部依赖）
 ├── evals/                      # CLI eval 固定用例
 ├── eval_results/               # 评测/压测脚本 + 全部结果与报告
-│   └── perf/                   # 负载测试脚本与数据
 ├── docs/                       # 部署、验证、并发、证据台账等文档 + 截图
 ├── models/                     # （打包为空）模型权重放置目录，见「模型权重」
 ├── .env.example                # 全部配置项注释
@@ -202,7 +257,7 @@ TRAVEL_HARNESS_PLANNER_MODE=vllm    # 自动填入 tagged 协议、base_url、�
 | [docs/deploy-vllm-server.md](docs/deploy-vllm-server.md) | vLLM 部署与接入 |
 | [docs/concurrency-techniques.md](docs/concurrency-techniques.md) | 并发优化调研与落地映射 |
 | [docs/evidence-ledger.md](docs/evidence-ledger.md) | 可公开边界与 Claim 证据 |
-| [docs/verification.md](docs/verification.md) | DeepSeek Smoke Run 验证记录 |
+| [docs/verification.md](docs/verification.md) | 三次真实运行的验证记录 |
 | [docs/2026-09-07-overnight-summary.md](docs/2026-09-07-overnight-summary.md) | 训练对齐改造全程记录 |
 | [eval_results/README.md](eval_results/README.md) | 评测产物总索引 |
 
