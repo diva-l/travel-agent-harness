@@ -134,6 +134,8 @@
 - FastAPI 全异步边界：`POST /api/plans` 202 异步受理，`GET /api/plans/{id}/events` 以 SSE 每 0.65s 推送增量 Trace 与状态
 - **并发模型**：worker 线程池（默认 2，可配）+ `BoundedSemaphore` 有界队列，超额直接 **503 + `Retry-After: 30`** fail-fast，不静默排队
 - worker 内未捕获异常会把任务落库为 `FAILED` 并追加 `runtime_failed` Trace——异常不丢状态
+- **可观测聚合端点**：`GET /api/metrics` 直接从 SQLite traces/tasks 表聚合——任务状态分布、终局成功率、步数/耗时/token 的 avg·p50·max、工具调用成功/失败/校验错误计数与工具使用分布，无需接入外部监控系统
+- **可选鉴权**：设置 `TRAVEL_HARNESS_API_TOKEN` 后，除 `/api/health` 外的所有 `/api/*` 路由要求 `Authorization: Bearer <token>`（常量时间比较）；不设置则保持本地 Demo 的开放行为
 - **前端输入清洗护栏**：自由文本剥离标记符号、按数据集口语句式拼接（相对日期、逗号短句、人均预算），避免字段式模板把 RL 模型拖出训练分布
 
 ## 训练环境对齐
@@ -264,7 +266,7 @@ TRAVEL_HARNESS_TRAINING_TOOL_FORMAT=true
 
 ### 3. 启动
 
-启动网页（默认只绑定本机；Demo 无鉴权，请勿暴露公网）：
+启动网页（默认只绑定本机；如需暴露到局域网/公网，先设置 `TRAVEL_HARNESS_API_TOKEN` 开启鉴权）：
 
 ```bash
 .venv/bin/travel-harness --env-file .env serve --host 127.0.0.1 --port 8765
@@ -285,7 +287,7 @@ travel-harness checkpoints <task-id>    # 查看检查点列表
 travel-harness resume <task-id>         # 从中断处恢复任务
 travel-harness fork <task-id> --checkpoint 2   # 从第 2 个检查点分叉复跑
 travel-harness eval --cases evals/cases.jsonl  # 跑离线评测
-python -m unittest discover -s tests    # 84 个单测
+python -m unittest discover -s tests    # 86 个单测
 ```
 
 配置全部走 `.env`（[.env.example](.env.example) 有完整注释），读取优先级：命令行参数 > `TRAVEL_HARNESS_*` > `AGENT_*` > `OPENAI_*`。
@@ -317,7 +319,7 @@ TRAVEL_HARNESS_FIRECRAWL_KEY=<your-key>
 │   ├── api/                    #   FastAPI 服务（任务、SSE、审批、Inspector）
 │   └── web_dist/               #   前端构建产物（pip 用户无需 Node）
 ├── frontend/                   # Vue 3 + Vite + TypeScript 源码（改前端才需要 Node）
-├── tests/                      # 84 个单元测试（unittest，无外部依赖）
+├── tests/                      # 86 个单元测试（unittest，无外部依赖）
 ├── evals/                      # CLI eval 固定用例
 ├── eval_results/               # 评测/压测：报告在顶层，scripts/ 为可复跑脚本，data/ 为逐条数据
 ├── docs/                       # 部署、验证、并发、证据台账等文档 + 截图
@@ -340,7 +342,7 @@ TRAVEL_HARNESS_FIRECRAWL_KEY=<your-key>
 ## 安全说明
 
 - `.env` 已在 `.gitignore` 中；任何真实 API Key 不应提交仓库（[.env.example](.env.example) 为模板）
-- Trace 自动脱敏疑似 API Key；Web Demo 无鉴权，默认绑定 127.0.0.1，请勿直接暴露公网
+- Trace 自动脱敏疑似 API Key；Web Demo 默认绑定 127.0.0.1，鉴权为可选项——设置 `TRAVEL_HARNESS_API_TOKEN` 后所有 `/api/*`（除 `/api/health`）要求 Bearer Token，不设置时请勿直接暴露公网
 
 ## License
 

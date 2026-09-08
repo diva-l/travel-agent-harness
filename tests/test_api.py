@@ -188,6 +188,96 @@ class ApiTests(unittest.TestCase):
                     if client.get(f"/api/plans/{third_id}").json()["status"] == "completed":
                         break
                     time.sleep(0.02)
+    def test_metrics_endpoint_aggregates_persisted_runs(self):
+        with tempfile.TemporaryDirectory() as folder:
+            config = HarnessConfig(
+                api_key="test-key",
+                base_url="https://example.invalid",
+                model="scripted",
+                db_path=Path(folder) / "api.db",
+                max_steps=5,
+                max_seconds=30,
+                max_total_tokens=1000,
+                max_tool_calls=5,
+                model_retries=0,
+                report_enabled=False,
+            )
+            model = ScriptedModel(
+                [
+                    ModelTurn(
+                        tool_calls=[
+                            ToolCall("m-call-1", "weather_search", {"city": "杭州"})
+                        ]
+                    ),
+                    ModelTurn(content="基于演示数据完成规划。"),
+                ]
+            )
+            harness = build_default_harness(config, model=model)
+            app = create_app(config, harness)
+            with TestClient(app) as client:
+                empty = client.get("/api/metrics").json()
+                self.assertEqual(0, empty["tasks_total"])
+                self.assertIsNone(empty["success_rate"])
+                response = client.post(
+                    "/api/plans",
+                    json={
+                        "origin": "上海",
+                        "destination": "杭州",
+                        "start_date": (date.today() + timedelta(days=7)).isoformat(),
+                        "days": 2,
+                        "budget_cny": 1800,
+                    },
+                )
+                self.assertEqual(202, response.status_code)
+                task_id = response.json()["task_id"]
+                deadline = time.monotonic() + 3
+                status_value = ""
+                while time.monotonic() < deadline:
+                    status_value = client.get(f"/api/plans/{task_id}").json()["status"]
+                    if status_value == "completed":
+                        break
+                    time.sleep(0.02)
+                self.assertEqual("completed", status_value)
+                metrics = client.get("/api/metrics").json()
+                self.assertEqual(1, metrics["tasks_total"])
+                self.assertEqual(1, metrics["tasks_by_status"]["completed"])
+                self.assertEqual(1, metrics["terminal_tasks"])
+                self.assertEqual(1.0, metrics["success_rate"])
+                self.assertGreater(metrics["steps"]["max"], 0)
+                self.assertEqual(1, metrics["tool_calls"]["successful"])
+                self.assertEqual(0, metrics["tool_calls"]["validation_errors"])
+                self.assertEqual({"weather_search": 1}, metrics["tool_usage"])
+
+    def test_optional_bearer_token_guards_api_routes(self):
+        with tempfile.TemporaryDirectory() as folder:
+            config = HarnessConfig(
+                api_key="test-key",
+                base_url="https://example.invalid",
+                model="scripted",
+                db_path=Path(folder) / "api.db",
+                report_enabled=False,
+                api_token="secret-token",
+            )
+            model = ScriptedModel([ModelTurn(content="ok")])
+            harness = build_default_harness(config, model=model)
+            app = create_app(config, harness)
+            with TestClient(app) as client:
+                # Health probes and the static UI stay open; the API is gated.
+                self.assertEqual(200, client.get("/api/health").status_code)
+                self.assertEqual(200, client.get("/").status_code)
+                self.assertEqual(401, client.get("/api/config").status_code)
+                self.assertEqual(401, client.get("/api/metrics").status_code)
+                denied = client.post("/api/plans", json={})
+                self.assertEqual(401, denied.status_code)
+                self.assertEqual("Bearer", denied.headers.get("WWW-Authenticate"))
+                wrong = client.get(
+                    "/api/config", headers={"Authorization": "Bearer wrong"}
+                )
+                self.assertEqual(401, wrong.status_code)
+                allowed = client.get(
+                    "/api/config", headers={"Authorization": "Bearer secret-token"}
+                )
+                self.assertEqual(200, allowed.status_code)
 
 
 if __name__ == "__main__":

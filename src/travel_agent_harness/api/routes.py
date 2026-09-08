@@ -28,6 +28,10 @@ def build_router(service: TaskService) -> APIRouter:
     def config():
         return service.safe_config()
 
+    @router.get("/metrics")
+    def metrics():
+        return service.metrics()
+
     @router.post("/plans", status_code=status.HTTP_202_ACCEPTED)
     def create_plan(request: TripPlanRequest):
         try:

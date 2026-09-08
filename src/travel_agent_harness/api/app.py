@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import hmac
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
-from fastapi.responses import FileResponse, Response
+from fastapi import FastAPI, Request
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from .. import __version__
@@ -39,6 +40,26 @@ def create_app(
         lifespan=lifespan,
     )
     app.state.task_service = service
+
+    if selected_config.api_token:
+        @app.middleware("http")
+        async def bearer_auth(request: Request, call_next):
+            # Optional deployment guard (TRAVEL_HARNESS_API_TOKEN): every /api
+            # route except health requires the bearer token; the static UI and
+            # health probes stay open. Constant-time compare, no logging of the
+            # presented credential.
+            path = request.url.path
+            if path.startswith("/api") and path != "/api/health":
+                header = request.headers.get("authorization", "")
+                presented = header.removeprefix("Bearer ") if header.startswith("Bearer ") else ""
+                if not presented or not hmac.compare_digest(presented, selected_config.api_token):
+                    return JSONResponse(
+                        status_code=401,
+                        content={"detail": "missing or invalid bearer token"},
+                        headers={"WWW-Authenticate": "Bearer"},
+                    )
+            return await call_next(request)
+
     app.include_router(build_router(service))
 
     web_dir = Path(__file__).resolve().parents[1] / "web_dist"

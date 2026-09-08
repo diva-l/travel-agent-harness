@@ -63,6 +63,9 @@ class TaskService:
         self.get(task_id)
         return self.harness.runtime.store.list_checkpoints(task_id)
 
+    def metrics(self) -> dict[str, Any]:
+        return self.harness.runtime.store.metrics_summary()
+
     def fork(self, task_id: str, checkpoint_seq: int, *, run: bool) -> TaskState:
         self.get(task_id)
         forked = self.harness.fork(task_id, checkpoint_seq)
@@ -185,6 +188,8 @@ class TaskService:
                 "human_approval",
                 "checkpoint_fork",
                 "offline_evaluation",
+                "runtime_metrics",
+                "optional_api_auth",
                 "planner_report_separation",
                 "interactive_route_report",
             ],

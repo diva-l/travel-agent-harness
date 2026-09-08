@@ -101,6 +101,10 @@ class HarnessConfig:
     # api_workers + api_queue_size are rejected with 503 instead of queueing
     # silently forever.
     api_queue_size: int = 32
+    # Optional deployment guard: when set, every /api/* route except
+    # /api/health requires `Authorization: Bearer <token>`. Empty = open
+    # (local demo default).
+    api_token: str = ""
     # Outbound tool HTTP: pooled connections (keep-alive) whose maxsize doubles
     # as a client-side concurrency limit toward rate-limited upstreams, with
     # retry+backoff on transient errors; optional TTL response cache (0 = off,
@@ -226,6 +230,7 @@ class HarnessConfig:
             ).lower() not in {"0", "false", "no"},
             "api_workers": int(_first_env("TRAVEL_HARNESS_API_WORKERS", default="2")),
             "api_queue_size": int(_first_env("TRAVEL_HARNESS_API_QUEUE", default="32")),
+            "api_token": _first_env("TRAVEL_HARNESS_API_TOKEN"),
             "tool_http_pool_size": int(
                 _first_env("TRAVEL_HARNESS_TOOL_HTTP_POOL", default="8")),
             "tool_http_retries": int(

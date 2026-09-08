@@ -11,6 +11,20 @@ from .models import TaskState
 from .redaction import redact
 
 
+def _distribution(values: Iterator[float]) -> dict[str, float]:
+    """avg / p50 / max summary for a numeric series (empty series -> zeros)."""
+    ordered = sorted(float(value) for value in values)
+    if not ordered:
+        return {"avg": 0.0, "p50": 0.0, "max": 0.0}
+    mid = len(ordered) // 2
+    p50 = ordered[mid] if len(ordered) % 2 else (ordered[mid - 1] + ordered[mid]) / 2
+    return {
+        "avg": round(sum(ordered) / len(ordered), 3),
+        "p50": round(p50, 3),
+        "max": round(ordered[-1], 3),
+    }
+
+
 class SQLiteStore:
     def __init__(self, path: str | Path) -> None:
         self.path = Path(path)
@@ -141,6 +155,84 @@ class SQLiteStore:
                     json.dumps(safe_payload, ensure_ascii=False, separators=(",", ":")),
                 ),
             )
+
+    def metrics_summary(self) -> dict[str, Any]:
+        """Aggregate runtime metrics over all persisted tasks (observability).
+
+        Reads only the tasks/traces tables — no model involvement, so the
+        numbers are identical whichever planner backend produced the runs.
+        """
+        with self._connection() as connection:
+            status_counts = {
+                row["status"]: row["n"]
+                for row in connection.execute(
+                    "SELECT status, COUNT(*) AS n FROM tasks GROUP BY status"
+                ).fetchall()
+            }
+            rows = [
+                dict(row)
+                for row in connection.execute(
+                    """
+                    SELECT json_extract(state_json, '$.status') AS status,
+                           json_extract(state_json, '$.step') AS step,
+                           json_extract(state_json, '$.elapsed_seconds') AS elapsed_seconds,
+                           json_extract(state_json, '$.prompt_tokens') AS prompt_tokens,
+                           json_extract(state_json, '$.completion_tokens') AS completion_tokens,
+                           json_extract(state_json, '$.tool_calls') AS tool_calls,
+                           json_extract(state_json, '$.successful_tool_calls') AS successful_tool_calls,
+                           json_extract(state_json, '$.tool_errors') AS tool_errors,
+                           json_extract(state_json, '$.validation_errors') AS validation_errors,
+                           json_extract(state_json, '$.report_status') AS report_status
+                    FROM tasks
+                    """
+                ).fetchall()
+            ]
+            tool_usage = {
+                row["tool"]: row["n"]
+                for row in connection.execute(
+                    """
+                    SELECT json_extract(payload_json, '$.tool') AS tool, COUNT(*) AS n
+                    FROM traces WHERE kind = 'tool_succeeded'
+                    GROUP BY tool ORDER BY n DESC
+                    """
+                ).fetchall()
+                if row["tool"]
+            }
+        terminal_statuses = {"completed", "exhausted", "failed"}
+        finished = [row for row in rows if row["status"] in terminal_statuses]
+        completed = status_counts.get("completed", 0)
+        return {
+            "tasks_total": len(rows),
+            "tasks_by_status": status_counts,
+            "terminal_tasks": len(finished),
+            # Success rate is measured over terminal tasks only: tasks still
+            # running/queued would drag it down without saying anything.
+            "success_rate": round(completed / len(finished), 4) if finished else None,
+            "steps": _distribution(row["step"] or 0 for row in finished),
+            "tokens": {
+                "prompt_total": sum(row["prompt_tokens"] or 0 for row in rows),
+                "completion_total": sum(row["completion_tokens"] or 0 for row in rows),
+                "per_task_avg": round(
+                    sum((row["prompt_tokens"] or 0) + (row["completion_tokens"] or 0) for row in finished)
+                    / len(finished),
+                    1,
+                )
+                if finished
+                else 0.0,
+            },
+            "tool_calls": {
+                "total": sum(row["tool_calls"] or 0 for row in rows),
+                "successful": sum(row["successful_tool_calls"] or 0 for row in rows),
+                "errors": sum(row["tool_errors"] or 0 for row in rows),
+                "validation_errors": sum(row["validation_errors"] or 0 for row in rows),
+            },
+            "elapsed_seconds": _distribution(row["elapsed_seconds"] or 0.0 for row in finished),
+            "tool_usage": tool_usage,
+            "reports": {
+                status: sum(1 for row in rows if row["report_status"] == status)
+                for status in ("completed", "failed", "skipped", "pending", "running")
+            },
+        }
 
     def trace(self, task_id: str, after_id: int = 0) -> list[dict[str, Any]]:
         with self._connection() as connection:
