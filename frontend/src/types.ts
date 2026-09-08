@@ -156,3 +156,22 @@ export interface TripPlanPayload {
   preferences: string[];
   notes: string;
 }
+
+export interface Distribution {
+  avg: number;
+  p50: number;
+  max: number;
+}
+
+export interface MetricsSummary {
+  tasks_total: number;
+  tasks_by_status: Record<string, number>;
+  terminal_tasks: number;
+  success_rate: number | null;
+  steps: Distribution;
+  tokens: { prompt_total: number; completion_total: number; per_task_avg: number };
+  tool_calls: { total: number; successful: number; errors: number; validation_errors: number };
+  elapsed_seconds: Distribution;
+  tool_usage: Record<string, number>;
+  reports: Record<string, number>;
+}

@@ -15,6 +15,8 @@ export const capabilityLabels: Record<string, string> = {
   human_approval: "人工审批",
   checkpoint_fork: "历史分叉",
   offline_evaluation: "离线评测",
+  runtime_metrics: "运行指标聚合",
+  optional_api_auth: "可选接口鉴权",
   planner_report_separation: "双模型分工",
   interactive_route_report: "交互路线",
 };
@@ -28,6 +30,8 @@ export const capabilityHints: Record<string, string> = {
   human_approval: "有副作用的操作先暂停，等人确认后再执行",
   checkpoint_fork: "从任意历史状态分叉出新任务，用于复跑与对比",
   offline_evaluation: "固定用例集离线评测，不依赖在线服务",
+  runtime_metrics: "从 SQLite 聚合任务成功率、步数、Token 与工具使用分布",
+  optional_api_auth: "设置 TRAVEL_HARNESS_API_TOKEN 后 API 需 Bearer 凭证访问",
   planner_report_separation: "规划与报告由两个模型分工，报告不得篡改规划",
   interactive_route_report: "规划结果渲染为按日组织的路线时间线与预算明细",
 };

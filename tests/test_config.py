@@ -12,6 +12,12 @@ def _from_env(env: dict[str, str], **overrides: object) -> HarnessConfig:
         return HarnessConfig.from_env(**overrides)
 
 
+def _as_linux():
+    """vllm-mode validation is platform-gated; these tests exercise the mode
+    itself, so they run the validate() call as if on a Linux host."""
+    return patch("travel_agent_harness.config.platform.system", return_value="Linux")
+
+
 class PlannerModePresetTests(unittest.TestCase):
     def test_api_mode_defaults_stay_on_hosted_api(self) -> None:
         config = _from_env({"TRAVEL_HARNESS_API_KEY": "sk-test"})
@@ -43,7 +49,8 @@ class PlannerModePresetTests(unittest.TestCase):
         self.assertEqual(50, config.model_top_k)
         self.assertEqual(5000, config.model_max_output_tokens)
         self.assertEqual(600.0, config.max_seconds)
-        config.validate()
+        with _as_linux():
+            config.validate()
 
     def test_vllm_mode_report_stage_defaults_to_hosted_api(self) -> None:
         config = _from_env(
@@ -64,13 +71,15 @@ class PlannerModePresetTests(unittest.TestCase):
             }
         )
         self.assertEqual("", config.report_api_key)
-        with self.assertRaises(ValueError):
-            config.validate()
+        with _as_linux():
+            with self.assertRaises(ValueError):
+                config.validate()
 
     def test_vllm_mode_requires_report_key_when_report_enabled(self) -> None:
         config = _from_env({"TRAVEL_HARNESS_PLANNER_MODE": "vllm"})
-        with self.assertRaises(ValueError):
-            config.validate()
+        with _as_linux():
+            with self.assertRaises(ValueError):
+                config.validate()
 
     def test_vllm_mode_allows_disabling_report(self) -> None:
         config = _from_env(
@@ -79,7 +88,20 @@ class PlannerModePresetTests(unittest.TestCase):
                 "TRAVEL_HARNESS_REPORT_ENABLED": "false",
             }
         )
-        config.validate()
+        with _as_linux():
+            config.validate()
+
+    def test_vllm_mode_rejected_on_windows(self) -> None:
+        config = _from_env(
+            {
+                "TRAVEL_HARNESS_PLANNER_MODE": "vllm",
+                "TRAVEL_HARNESS_REPORT_API_KEY": "sk-report",
+            }
+        )
+        with patch("travel_agent_harness.config.platform.system", return_value="Windows"):
+            with self.assertRaises(ValueError) as ctx:
+                config.validate()
+        self.assertIn("TRAVEL_HARNESS_PLANNER_MODE=api", str(ctx.exception))
 
     def test_explicit_env_vars_beat_preset(self) -> None:
         config = _from_env(

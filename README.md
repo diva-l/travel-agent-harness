@@ -213,7 +213,9 @@ pip install -e '.[test]'
 
 Planner（规划模型）有两种接入方式，由 `TRAVEL_HARNESS_PLANNER_MODE` 切换。两种模式共享同一套 Harness、工具链、Trace 与前端，区别只在模型从哪来、走什么协议。
 
-#### 模式 A：DeepSeek API（默认，无需 GPU）
+**平台支持**：模式 A 全平台可用（Windows / Linux / macOS，无需 GPU）；模式 B 仅 Linux + NVIDIA GPU（vLLM 没有原生 Windows 版本——在 Windows 上配置 `PLANNER_MODE=vllm` 会在启动时直接报错并提示切回 api 模式，而不是等到模型调用时才连接失败）。
+
+#### 模式 A：DeepSeek API（默认，全平台，无需 GPU）
 
 直接用托管的 DeepSeek 大模型当 Planner，走原生 Function Calling 协议。适合快速体验全链路、或作为评测参照组。
 
@@ -229,7 +231,7 @@ TRAVEL_HARNESS_MODEL_PROTOCOL=native               # 默认值
 
 Report Model（把规划结果整理成路线 JSON）默认复用 Planner 的 key 和端点，无需额外配置。任何 OpenAI 兼容端点（不只 DeepSeek）都可以通过改 `BASE_URL` / `MODEL` 接入。
 
-#### 模式 B：本地 TravelPlanner-4B（vLLM，需 GPU）
+#### 模式 B：本地 TravelPlanner-4B（vLLM，仅 Linux + GPU）
 
 用自己训练的 RL 模型当 Planner，走训练时的 `<tool_call>` 文本协议。模型权重不进本仓库，放到 `models/checkpoint-150/`（Qwen3-4B，bf16）后，用 vLLM 暴露 OpenAI-compatible API：
 
@@ -287,7 +289,7 @@ travel-harness checkpoints <task-id>    # 查看检查点列表
 travel-harness resume <task-id>         # 从中断处恢复任务
 travel-harness fork <task-id> --checkpoint 2   # 从第 2 个检查点分叉复跑
 travel-harness eval --cases evals/cases.jsonl  # 跑离线评测
-python -m unittest discover -s tests    # 86 个单测
+python -m unittest discover -s tests    # 87 个单测
 ```
 
 配置全部走 `.env`（[.env.example](.env.example) 有完整注释），读取优先级：命令行参数 > `TRAVEL_HARNESS_*` > `AGENT_*` > `OPENAI_*`。
@@ -319,7 +321,7 @@ TRAVEL_HARNESS_FIRECRAWL_KEY=<your-key>
 │   ├── api/                    #   FastAPI 服务（任务、SSE、审批、Inspector）
 │   └── web_dist/               #   前端构建产物（pip 用户无需 Node）
 ├── frontend/                   # Vue 3 + Vite + TypeScript 源码（改前端才需要 Node）
-├── tests/                      # 86 个单元测试（unittest，无外部依赖）
+├── tests/                      # 87 个单元测试（unittest，无外部依赖）
 ├── evals/                      # CLI eval 固定用例
 ├── eval_results/               # 评测/压测：报告在顶层，scripts/ 为可复跑脚本，data/ 为逐条数据
 ├── docs/                       # 部署、验证、并发、证据台账等文档 + 截图

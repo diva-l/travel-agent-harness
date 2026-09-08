@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import platform
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -289,6 +290,15 @@ class HarnessConfig:
             raise ValueError("model protocol must be native or tagged")
         if self.planner_mode not in PLANNER_PRESETS:
             raise ValueError("planner mode must be one of: " + ", ".join(sorted(PLANNER_PRESETS)))
+        if self.planner_mode == "vllm" and platform.system() == "Windows":
+            # Fail fast at startup with an actionable message instead of an
+            # opaque connection-refused later: vLLM has no native Windows
+            # build, so the local planner can only be served on Linux.
+            raise ValueError(
+                "vllm planner mode requires Linux + NVIDIA GPU (vLLM has no native "
+                "Windows build); on Windows set TRAVEL_HARNESS_PLANNER_MODE=api to "
+                "use a hosted OpenAI-compatible API"
+            )
         if (
             self.planner_mode == "vllm"
             and self.report_enabled
