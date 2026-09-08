@@ -134,7 +134,7 @@
 - FastAPI 全异步边界：`POST /api/plans` 202 异步受理，`GET /api/plans/{id}/events` 以 SSE 每 0.65s 推送增量 Trace 与状态
 - **并发模型**：worker 线程池（默认 2，可配）+ `BoundedSemaphore` 有界队列，超额直接 **503 + `Retry-After: 30`** fail-fast，不静默排队
 - worker 内未捕获异常会把任务落库为 `FAILED` 并追加 `runtime_failed` Trace——异常不丢状态
-- **可观测聚合端点**：`GET /api/metrics` 直接从 SQLite traces/tasks 表聚合——任务状态分布、终局成功率、步数/耗时/token 的 avg·p50·max、工具调用成功/失败/校验错误计数与工具使用分布，无需接入外部监控系统
+- **可观测聚合端点**：`GET /api/metrics` 直接从 SQLite traces/tasks 表聚合——任务状态分布、终局成功率、步数/耗时/token 的 avg·p50·max、工具调用成功/失败/校验错误计数与工具使用分布，无需接入外部监控系统；前端右上角「运行指标」按钮打开可视化面板（10s 自动刷新）
 - **可选鉴权**：设置 `TRAVEL_HARNESS_API_TOKEN` 后，除 `/api/health` 外的所有 `/api/*` 路由要求 `Authorization: Bearer <token>`（常量时间比较）；不设置则保持本地 Demo 的开放行为
 - **前端输入清洗护栏**：自由文本剥离标记符号、按数据集口语句式拼接（相对日期、逗号短句、人均预算），避免字段式模板把 RL 模型拖出训练分布
 
