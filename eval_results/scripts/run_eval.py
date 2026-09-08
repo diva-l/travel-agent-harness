@@ -44,7 +44,8 @@ from travel_agent_harness.prompts import build_planner_system_prompt  # noqa: E4
 
 
 # ---------------------------------------------------------------------------
-# Case selection (deterministic: sort by id, every 8th of 80)
+# Case selection (the shipped test set holds the 10 evaluated cases;
+# --limit sub-samples deterministically: sort by id, stride)
 # ---------------------------------------------------------------------------
 
 def load_cases(limit: int = 10) -> list[dict]:

@@ -3,7 +3,7 @@
 本目录汇集 TravelAgentHarness 的评测产物：模型质量对照（Voyager-4B vs DeepSeek，
 同一 Harness + 同一真实工具链）与工程压测。目录约定：报告在顶层，可复跑脚本在
 [scripts/](scripts/)，原始数据在 [data/](data/)。测试集：
-[data/test_final.jsonl](data/test_final.jsonl) 80 条中确定性抽样 10 条（按 id 排序每隔 8 条），
+[data/test_final.jsonl](data/test_final.jsonl) 10 条用例（精选自训练侧 80 条测试集，按 id 排序每隔 8 条确定性抽样），
 数据集指纹 sha256 `b7d3c735c13f92328aa0bf246d0649e4a1f8cfac6fcc187281775622e0ef4303`。
 工具链均为真实外部 API（高德 Web 服务 + Firecrawl）。
 
@@ -15,7 +15,6 @@
 | [data/summary.json](data/summary.json) | 聚合指标 |
 | [data/results_vllm_rl150.jsonl](data/results_vllm_rl150.jsonl) | Voyager-4B 逐条原始记录 |
 | [data/results_api.jsonl](data/results_api.jsonl) | DeepSeek 逐条原始记录 |
-| [data/gold_selected.jsonl](data/gold_selected.jsonl) | 抽中的 10 条样本（judge 对照） |
 | [scripts/run_eval.py](scripts/run_eval.py) / [scripts/summarize.py](scripts/summarize.py) | 可复跑脚本 |
 | [scripts/example_scorer.py](scripts/example_scorer.py) | 打分器接口示例（`run_eval.py --scorer` 可接入任意自定义 scorer） |
 

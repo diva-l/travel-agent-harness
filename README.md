@@ -170,7 +170,7 @@
 
 ### 接入 Harness 后：Voyager-4B vs deepseek-v4-pro
 
-上面是训练侧的结论。把 RL 模型接入本项目的 Harness（有界循环、护栏、Trace、前端全链路）之后，再在**同一 Harness、同一真实工具链**（高德 + Firecrawl）下与 DeepSeek 对照——测试集 [eval_results/data/test_final.jsonl](eval_results/data/test_final.jsonl) 确定性抽样 10/80（指纹 `b7d3c735…e0ef4303`），judge=deepseek-v4-flash，训练对齐开关全开：
+上面是训练侧的结论。把 RL 模型接入本项目的 Harness（有界循环、护栏、Trace、前端全链路）之后，再在**同一 Harness、同一真实工具链**（高德 + Firecrawl）下与 DeepSeek 对照——测试集 [eval_results/data/test_final.jsonl](eval_results/data/test_final.jsonl) 10 条用例（指纹 `b7d3c735…e0ef4303`），judge=deepseek-v4-flash，训练对齐开关全开：
 
 | 指标 | Voyager-4B (RL) | deepseek-v4-pro |
 |---|---:|---:|

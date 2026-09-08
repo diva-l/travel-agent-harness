@@ -1,7 +1,7 @@
 # Harness 工程指标压测报告（vLLM 模式）
 
 2026-09-08 · RTX 5090 32GB · Voyager-4B（RL · Qwen3-4B bf16）· vLLM `--max-model-len 50000`
-测试集：与 RL 评测相同的 10 条样本（`../data/test_final.jsonl` 每隔 8 条，指纹 `b7d3c735…e0ef4303`）
+测试集：与模型质量对照相同的 10 条用例（`../data/test_final.jsonl`，指纹 `b7d3c735…e0ef4303`）
 工具链：高德 Web 服务 + Firecrawl（真实外部 API）+ **训练同款 LLM 车票/航班模拟器与 visit 提取器**（deepseek-v4-flash）。Report 阶段关闭。
 
 > 口径说明：本轮 harness 已全开训练对齐开关（强制收尾、重复循环检测+作答机会、观测截断 5000、
