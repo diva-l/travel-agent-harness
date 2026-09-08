@@ -15,10 +15,7 @@
   <a href="#文档索引">文档</a>
 </p>
 
-**30 秒速览**：Agentic RL 训练的 Qwen3-4B Planner 在受约束的工具循环里查天气、搜地点、比车次、算路线，
-产出有证据支撑的逐日行程；Harness 负责边界控制、Schema 校验、Checkpoint、Trace 与人工审批。
-RL 模型在 10 条确定性抽样的真实 API 评测中**打平 DeepSeek**（必需工具覆盖率 0.775），
-HTTP 路径压测 **645 任务/时**。一个反直觉发现：评测环境不对齐训练分布时，会出现「基座 > RL」的假象。
+**30 秒速览**：Agentic RL 训练的 Qwen3-4B Planner 在受约束的工具循环里查天气、搜地点、比车次、算路线，产出有证据支撑的逐日行程；Harness 负责边界控制、Schema 校验、Checkpoint、Trace 与人工审批。RL 模型在 10 条确定性抽样的真实 API 评测中**打平 DeepSeek**（必需工具覆盖率 0.775），HTTP 路径压测 **645 任务/时**。一个反直觉发现：评测环境不对齐训练分布时，会出现「基座 > RL」的假象。
 
 ## 界面预览
 
@@ -28,9 +25,7 @@ HTTP 路径压测 **645 任务/时**。一个反直觉发现：评测环境不�
 
 ## 评测结果
 
-测试集：[eval_results/test_final.jsonl](eval_results/test_final.jsonl) 80 条中确定性抽样 10 条
-（指纹 `b7d3c735…e0ef4303`）；工具链为真实外部 API；judge=deepseek-v4-flash；
-运行环境已全开训练对齐开关。脚本与逐条数据在 [eval_results/](eval_results/README.md)。
+测试集：[eval_results/test_final.jsonl](eval_results/test_final.jsonl) 80 条中确定性抽样 10 条（指纹 `b7d3c735…e0ef4303`）；工具链为真实外部 API；judge=deepseek-v4-flash；运行环境已全开训练对齐开关。脚本与逐条数据在 [eval_results/](eval_results/README.md)。
 
 ### 基座 → SFT → RL 四路对比（DeepSeek 作参照）
 
@@ -43,9 +38,7 @@ HTTP 路径压测 **645 任务/时**。一个反直觉发现：评测环境不�
 | RL 混合分（phase3） | 0.419 | 0.223 | **0.480** | 0.461 |
 | LLM judge | 0.48 | 0.27 | **0.60** | 0.57 |
 
-**RL-150 是最强本地模型**，与训练侧 80 条 judge 结论一致；未对齐 harness 时曾出现
-「基座 > RL」的假象，证实评测环境对齐训练分布的必要性。逐条明细：
-[eval_results/compare_report.md](eval_results/compare_report.md)。
+**RL-150 是最强本地模型**，与训练侧 80 条 judge 结论一致；未对齐 harness 时曾出现「基座 > RL」的假象，证实评测环境对齐训练分布的必要性。逐条明细：[eval_results/compare_report.md](eval_results/compare_report.md)。
 
 ### 工程压测（对齐版，2026-09-08）
 
@@ -58,30 +51,22 @@ HTTP 路径压测 **645 任务/时**。一个反直觉发现：评测环境不�
 | 护栏有效 | schema-echo 场均拦截 0.6 次全部自愈；重复阻断/强制收尾/作答机会按训练契约触发 |
 | Prefix cache | 命中率 87.3%，多轮 prefill 的主要减压阀 |
 
-完整报告：[eval_results/perf/perf_report.md](eval_results/perf/perf_report.md)
-（对齐前旧版归档于 `eval_results/perf/archive_20260906/`）。
+完整报告：[eval_results/perf/perf_report.md](eval_results/perf/perf_report.md)（对齐前旧版归档于 `eval_results/perf/archive_20260906/`）。
 
 ## 这是什么
 
-主链路：用户需求 → `AgentRuntime`（唯一执行内核）→ Agentic RL Planner 的工具循环 →
-Report Model 做证据约束的结构化转换 → 前端交互路线图。Evaluation 只是复用 Runtime 的
-离线入口，不另造 Agent 逻辑；Web 层没有自己的 Agent Loop，页面上每个运行时状态都能回溯到
-同一套 Runtime 和 SQLite 状态。
+主链路：用户需求 → `AgentRuntime`（唯一执行内核）→ Agentic RL Planner 的工具循环 → Report Model 做证据约束的结构化转换 → 前端交互路线图。Evaluation 只是复用 Runtime 的离线入口，不另造 Agent 逻辑；Web 层没有自己的 Agent Loop，页面上每个运行时状态都能回溯到同一套 Runtime 和 SQLite 状态。
 
 本仓库是 **Harness + 评测 + 产品化前端**，不含训练代码与模型权重（见[模型权重](#模型权重)）。
 
 ## 核心特性
 
 **Agent 运行时**
-- 双模型协议：原生 Function Calling，或训练模型的 `<tool_call>` / `<answer>` 文本协议
-  （json_repair 容错、`<tool_calls>` 复数包裹、`tool`/`parameters` 变体、未闭合 `<answer>`），
-  Observation 按训练侧格式翻译为 `<tool_response>`（json2md + 头尾各 2500 字截断）
+- 双模型协议：原生 Function Calling，或训练模型的 `<tool_call>` / `<answer>` 文本协议（json_repair 容错、`<tool_calls>` 复数包裹、`tool`/`parameters` 变体、未闭合 `<answer>`），Observation 按训练侧格式翻译为 `<tool_response>`（json2md + 头尾各 2500 字截断）
 - 有界 Agent Loop：步数 / 墙钟 / 累计 Token / 工具调用数四项预算，阻断第 4 次完全相同调用
-- 可靠执行：模型请求指数退避重试；截断输出（finish_reason=length）自动放大预算重试；
-  每轮写入 SQLite Checkpoint，可恢复、可从任一 Checkpoint Fork 复跑
+- 可靠执行：模型请求指数退避重试；截断输出（finish_reason=length）自动放大预算重试；每轮写入 SQLite Checkpoint，可恢复、可从任一 Checkpoint Fork 复跑
 - 可观测性：模型轮次、工具调用、状态迁移、预算消耗、失败原因全量 Trace，自动脱敏疑似 API Key
-- 安全边界：工具级输入/输出 Guardrail（含 schema-echo 护栏：模型复读工具定义时收到明确改错消息）；
-  副作用工具可声明 `requires_approval`，任务暂停等待人工审批
+- 安全边界：工具级输入/输出 Guardrail（含 schema-echo 护栏：模型复读工具定义时收到明确改错消息）；副作用工具可声明 `requires_approval`，任务暂停等待人工审批
 - 证据门禁：零取证的空想答案直接拒收
 
 **训练环境对齐**（评测 RL 模型时建议全开，默认关）
@@ -101,14 +86,10 @@ Report Model 做证据约束的结构化转换 → 前端交互路线图。Evalu
 解析失败/空输出时模型收到训练原文引导消息并被重问，不再静默重采样。
 
 **数据与产品化**
-- 8 个工具契约与训练 Prompt 逐字一致（search / visit / weather_search / flights_search /
-  train_tickets_search / poi_search / around_search / route_planning），返回值带 `data_source` 标记
-- 可切换数据源：离线演示 fixtures ↔ 高德 Web 服务（真实地理数据）+ Firecrawl（真实检索）；
-  高德并发 QPS 限流（infocode 10021）由 provider 级指数退避重试吸收
-- 前端按数据集口语分布拼接触发词（相对日期、逗号短句、人均预算），自由文本经清洗护栏，
-  避免字段式模板把 RL 模型拖出训练分布
-- FastAPI 任务 / 状态 / Trace / SSE 实时事件 / 审批接口；Vue 3 交互路线图（地图主、文字辅）；
-  并发 worker 池可配置（`TRAVEL_HARNESS_API_WORKERS`），有界队列 503 背压
+- 8 个工具契约与训练 Prompt 逐字一致（search / visit / weather_search / flights_search / train_tickets_search / poi_search / around_search / route_planning），返回值带 `data_source` 标记
+- 可切换数据源：离线演示 fixtures ↔ 高德 Web 服务（真实地理数据）+ Firecrawl（真实检索）；高德并发 QPS 限流（infocode 10021）由 provider 级指数退避重试吸收
+- 前端按数据集口语分布拼接触发词（相对日期、逗号短句、人均预算），自由文本经清洗护栏，避免字段式模板把 RL 模型拖出训练分布
+- FastAPI 任务 / 状态 / Trace / SSE 实时事件 / 审批接口；Vue 3 交互路线图（地图主、文字辅）；并发 worker 池可配置（`TRAVEL_HARNESS_API_WORKERS`），有界队列 503 背压
 - Planner 只产出规划；Report Model 不重新规划，只把结果整理为受校验的路线 JSON，失败保留原文
 
 ## 快速开始
@@ -143,8 +124,7 @@ travel-harness fork <task-id> --checkpoint 2
 python -m unittest discover -s tests    # 84 个单测
 ```
 
-配置全部走 `.env`（[.env.example](.env.example) 有完整注释），读取优先级：
-命令行参数 > `TRAVEL_HARNESS_*` > `AGENT_*` > `OPENAI_*`。
+配置全部走 `.env`（[.env.example](.env.example) 有完整注释），读取优先级：命令行参数 > `TRAVEL_HARNESS_*` > `AGENT_*` > `OPENAI_*`。
 
 ### 接入真实数据
 
@@ -164,8 +144,7 @@ models/
 └── checkpoint-150/        # RL 最终权重（Qwen3-4B，bf16）
 ```
 
-用 vLLM 暴露 OpenAI-compatible API（RTX 5090 需 `VLLM_USE_FLASHINFER_SAMPLER=0`，
-详见 [docs/deploy-vllm-server.md](docs/deploy-vllm-server.md)）：
+用 vLLM 暴露 OpenAI-compatible API（RTX 5090 需 `VLLM_USE_FLASHINFER_SAMPLER=0`，详见 [docs/deploy-vllm-server.md](docs/deploy-vllm-server.md)）：
 
 ```bash
 python -m vllm.entrypoints.openai.api_server \
