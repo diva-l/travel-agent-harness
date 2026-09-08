@@ -1,18 +1,20 @@
 # -*- coding: utf-8 -*-
-"""Offline evaluation: RL-level (parser-aligned rewards + LLM judge) and
-harness-level scoring for the vLLM planner vs the DeepSeek baseline.
+"""Offline evaluation: harness-level scoring for the vLLM planner vs the
+DeepSeek baseline, with a pluggable reward-scorer interface on top.
 
-RL scoring reuses the training-side reward plugin verbatim
-(travel_agentic_rl/.../tooluse_reward_parser_aligned.py) with a stubbed
-swift.rewards module, so the numbers are produced by the same code path that
-trained the model. Curriculum phase-3 weights [0.05, 0.07, 0.03, 0.05, 0.10,
-0.70] apply (GRPO checkpoint at step 150 of 200).
+Scoring is layered:
 
-Harness scoring follows the project's runtime metrics plus EvoAgent-style
-reproducibility gates (dataset fingerprint, per-case scorecard).
+- Harness metrics (status, tool coverage, steps, tokens, elapsed) are always
+  computed — they only need this repository.
+- The trajectory score comes from a *scorer*: any Python file exposing
+  `score(messages: list[dict]) -> float` can be plugged in via `--scorer`.
+  See example_scorer.py for the interface.
+- The numbers in report.md were produced with the training-side reward
+  plugin (not shipped in this repo); when it is unavailable, the run still
+  produces all harness metrics and simply skips the trajectory score.
 
 Usage:
-    python run_eval.py --mode vllm|api [--limit 10]
+    python run_eval.py --mode vllm|api [--limit 10] [--scorer my_scorer.py]
 """
 from __future__ import annotations
 
@@ -102,6 +104,16 @@ def load_reward_plugin(gold_path: Path):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def load_user_scorer(path: Path):
+    """Load a user-provided scorer module exposing score(messages) -> float."""
+    spec = importlib.util.spec_from_file_location("user_scorer", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    if not callable(getattr(module, "score", None)):
+        raise TypeError(f"{path} must define a callable score(messages)")
+    return module.score
 
 
 # ---------------------------------------------------------------------------
@@ -208,6 +220,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", choices=["vllm", "api"], required=True)
     parser.add_argument("--limit", type=int, default=10)
+    parser.add_argument("--scorer", help="Python file exposing score(messages) -> float")
     parser.add_argument("--skip-judge", action="store_true")
     args = parser.parse_args()
 
@@ -234,13 +247,34 @@ def main() -> None:
         for case in cases:
             f.write(json.dumps(case, ensure_ascii=False) + "\n")
 
-    plugin = load_reward_plugin(gold_path)
-    judge = None
-    if not args.skip_judge:
-        os.environ["JUDGE_API_KEY"] = config.report_api_key or config.api_key
-        os.environ["JUDGE_BASE_URL"] = "https://api.deepseek.com"
-        os.environ["JUDGE_MODEL"] = "deepseek-v4-flash"
-        judge = plugin.ParserAlignedAnswerLLMJudgeReward()
+    # Scorer selection: --scorer (user implementation) > training-side plugin
+    # (internal, not shipped) > None (harness metrics only).
+    scorer = None
+    scorer_name = "none"
+    if args.scorer:
+        user_score = load_user_scorer(Path(args.scorer))
+        scorer_name = f"user:{Path(args.scorer).name}"
+
+        def scorer(messages, _score=user_score):
+            return {"mixed_reward_phase3": round(float(_score(messages)), 4)}
+
+    elif REWARD_PLUGIN.is_file():
+        plugin = load_reward_plugin(gold_path)
+        judge = None
+        if not args.skip_judge:
+            os.environ["JUDGE_API_KEY"] = config.report_api_key or config.api_key
+            os.environ["JUDGE_BASE_URL"] = "https://api.deepseek.com"
+            os.environ["JUDGE_MODEL"] = "deepseek-v4-flash"
+            judge = plugin.ParserAlignedAnswerLLMJudgeReward()
+        scorer_name = "training-side plugin"
+
+        def scorer(messages, _plugin=plugin, _judge=judge):
+            return score_rl(_plugin, _judge, messages)
+
+    else:
+        print("[eval] no reward scorer available (training-side scorer is not "
+              "shipped; pass --scorer your_scorer.py to plug in your own) — "
+              "harness metrics only")
 
     tools_schema = harness.runtime.tools.api_schemas()
     results_path = OUT_DIR / f"results_{planner_mode}.jsonl"
@@ -259,7 +293,7 @@ def main() -> None:
                 continue
             hm = harness_metrics(harness, state)
             messages = turns_from_state(state, tools_schema)
-            rl = score_rl(plugin, judge, messages)
+            rl = scorer(messages) if scorer else None
             model_tools = sorted({
                 c["function"]["name"] if "function" in c else c.get("name")
                 for m in state.messages if m["role"] == "assistant"
@@ -287,10 +321,12 @@ def main() -> None:
             }
             out.write(json.dumps(record, ensure_ascii=False) + "\n")
             out.flush()
+            mixed = rl["mixed_reward_phase3"] if rl else "-"
             print(f"  -> {hm['status']} steps={hm['steps']} tools={hm['tool_calls']} "
-                  f"tokens={hm['total_tokens']} mixed={rl['mixed_reward_phase3']}", flush=True)
+                  f"tokens={hm['total_tokens']} mixed={mixed}", flush=True)
 
     print(json.dumps({"mode": planner_mode, "dataset_fingerprint": fp,
+                      "scorer": scorer_name,
                       "results": str(results_path)}, ensure_ascii=False))
 
 

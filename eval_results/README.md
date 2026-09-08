@@ -17,6 +17,7 @@
 | [data/results_api.jsonl](data/results_api.jsonl) | DeepSeek 逐条原始记录 |
 | [data/gold_selected.jsonl](data/gold_selected.jsonl) | 抽中的 10 条样本（judge 对照） |
 | [scripts/run_eval.py](scripts/run_eval.py) / [scripts/summarize.py](scripts/summarize.py) | 可复跑脚本 |
+| [scripts/example_scorer.py](scripts/example_scorer.py) | 打分器接口示例（`run_eval.py --scorer` 可接入任意自定义 scorer） |
 
 核心结论：完成率 0.9 vs 0.9（各 1 条撞 13 轮上限）；必需工具覆盖率 0.775 持平；
 过程奖励混合分 0.480 vs 0.461、judge 分 0.60 vs 0.57，Voyager-4B 小幅反超；
@@ -46,6 +47,7 @@ Planner 原始规划全文面板。
 
 ## 注意事项
 
+- 打分是**可插拔接口**：`run_eval.py --scorer your_scorer.py` 可挂任意实现了 `score(messages) -> float` 的打分器；report.md 的过程奖励混合分由训练侧 scorer 产出（不随仓库发布），无 scorer 时脚本照常输出全部 harness 层指标
 - `scripts/summarize.py` 重跑会覆盖 `report.md`，其中「Token 口径说明」「未完成明细」两节为手工补充
 - n=10 抽样 + judge（deepseek-v4-flash）长答案偏好：所有对比关注趋势，勿读小数点
 - 轨迹含实时外部数据，不可精确复现

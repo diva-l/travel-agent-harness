@@ -22,6 +22,7 @@ def mean(values):
 def aggregate(records: list[dict]) -> dict:
     n = len(records)
     ok = [r for r in records if not r.get("runner_error")]
+    scored = [r for r in ok if r.get("rl")]
     return {
         "cases": n,
         "runner_errors": n - len(ok),
@@ -35,8 +36,8 @@ def aggregate(records: list[dict]) -> dict:
         "mean_elapsed_seconds": mean([r["harness"]["elapsed_seconds"] for r in ok]),
         "total_repeat_blocks": sum(r["harness"]["repeat_blocks"] for r in ok),
         "total_validation_errors": sum(r["harness"]["validation_errors"] for r in ok),
-        "rl_sub_means": {k: mean([r["rl"]["sub_rewards"][k] for r in ok]) for k in SUB_KEYS},
-        "rl_mixed_phase3_mean": mean([r["rl"]["mixed_reward_phase3"] for r in ok]),
+        "rl_sub_means": {k: mean([r["rl"].get("sub_rewards", {}).get(k) for r in scored]) for k in SUB_KEYS},
+        "rl_mixed_phase3_mean": mean([r["rl"]["mixed_reward_phase3"] for r in scored]),
         "mean_answer_chars": mean([r["answer_chars"] for r in ok]),
     }
 
@@ -78,7 +79,8 @@ def main() -> None:
         "mean_answer_chars": "平均答案长度（字）",
     }
     for key, label in labels.items():
-        lines.append(f"| {label} | {summary['vllm'][key]} | {summary['api'][key]} |")
+        fmt = lambda v: v if v is not None else "-"
+        lines.append(f"| {label} | {fmt(summary['vllm'][key])} | {fmt(summary['api'][key])} |")
     lines.append("")
     lines.append("## 逐条明细")
     lines.append("")
@@ -89,8 +91,10 @@ def main() -> None:
     for case_id, rv in vllm_map.items():
         ra = api_map.get(case_id, {})
         q = rv["query"][:24].replace("|", "/")
-        rv_s = f"{rv['harness']['status']} / {rv['rl']['mixed_reward_phase3']}"
-        ra_s = f"{ra.get('harness', {}).get('status', '-')} / {ra.get('rl', {}).get('mixed_reward_phase3', '-')}"
+        rv_mixed = rv["rl"]["mixed_reward_phase3"] if rv.get("rl") else "-"
+        rv_s = f"{rv['harness']['status']} / {rv_mixed}"
+        ra_mixed = ra["rl"]["mixed_reward_phase3"] if ra.get("rl") else "-"
+        ra_s = f"{ra.get('harness', {}).get('status', '-')} / {ra_mixed}"
         lines.append(f"| {case_id[:8]} | {q} | {rv_s} | {ra_s} |")
     lines.append("")
     lines.append("> 注意：n=10 抽样，RL 分数与 judge 均有方差；单次对比不构成总体优劣结论。")
