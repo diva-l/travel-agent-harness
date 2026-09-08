@@ -211,13 +211,7 @@ pip install -e '.[test]'
 
 ### 2. 选择 Planner 模式
 
-**推荐先跑装机向导**：它会识别你的操作系统，只列出本机实际可运行的模式（Windows 只提供 api；Linux 提供 api / vllm 两种），交互式问完必需的 key 后直接生成可用的 `.env`，不给配置出错的机会：
-
-```bash
-travel-harness setup          # 生成 .env（Windows 下激活 venv 后直接可用）
-```
-
-也可以手动配置——Planner（规划模型）有两种接入方式，由 `TRAVEL_HARNESS_PLANNER_MODE` 切换。两种模式共享同一套 Harness、工具链、Trace 与前端，区别只在模型从哪来、走什么协议。
+Planner（规划模型）有两种接入方式，由 `TRAVEL_HARNESS_PLANNER_MODE` 切换。两种模式共享同一套 Harness、工具链、Trace 与前端，区别只在模型从哪来、走什么协议。也可以直接跑 `travel-harness setup`，按提示交互生成 `.env`（会自动识别系统，Windows 只提供 api 选项）。
 
 **平台支持**：模式 A 全平台可用（Windows / Linux / macOS，无需 GPU）；模式 B 仅 Linux + NVIDIA GPU（vLLM 没有原生 Windows 版本——在 Windows 上配置 `PLANNER_MODE=vllm` 会在启动时直接报错并提示切回 api 模式，而不是等到模型调用时才连接失败）。
 
