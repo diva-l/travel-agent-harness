@@ -1,7 +1,7 @@
 """Shared HTTP plumbing for external tool providers.
 
-One urllib3 PoolManager per provider gives three of the concurrency levers
-from docs/concurrency-techniques.md in a single place:
+One urllib3 PoolManager per provider gives three concurrency levers in a
+single place:
 
 - connection reuse (keep-alive) instead of per-call TCP/TLS handshakes;
 - a bounded, blocking connection pool = client-side concurrency limit

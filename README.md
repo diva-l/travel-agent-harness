@@ -181,7 +181,7 @@
 | 护栏有效 | schema-echo 场均拦截 0.6 次全部自愈；重复阻断/强制收尾/作答机会按训练契约触发 |
 | Prefix cache | 命中率 87.3%，多轮 prefill 的主要减压阀 |
 
-完整报告：[eval_results/perf/perf_report.md](eval_results/perf/perf_report.md)（早期数据归档于 `eval_results/perf/archive_20260906/`）。
+完整报告：[eval_results/perf/perf_report.md](eval_results/perf/perf_report.md)。
 
 ## 快速开始
 
@@ -329,7 +329,7 @@ TRAVEL_HARNESS_FIRECRAWL_KEY=<your-key>
 ├── tests/                      # 91 个单元测试（unittest，无外部依赖）
 ├── evals/                      # CLI eval 固定用例
 ├── eval_results/               # 评测/压测：报告在顶层，scripts/ 为可复跑脚本，data/ 为逐条数据
-├── docs/                       # 部署、验证、并发、证据台账等文档 + 截图
+├── docs/                       # 部署文档、界面截图、hero 图
 ├── models/                     # 模型权重放置目录，见快速开始模式 B
 ├── .env.example                # 全部配置项注释
 └── requirements.txt

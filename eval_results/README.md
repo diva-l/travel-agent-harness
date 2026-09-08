@@ -29,7 +29,6 @@
 | [perf/data/gpu_samples.jsonl](perf/data/gpu_samples.jsonl) | GPU 采样 1189 条（util/显存/功耗） |
 | [perf/data/api_load_baseline.json](perf/data/api_load_baseline.json) / [perf/data/api_load_sweep.json](perf/data/api_load_sweep.json) | 真实 HTTP 路径（worker=2 基线 / worker=16 扫档） |
 | [perf/scripts/load_test.py](perf/scripts/load_test.py) / [perf/scripts/api_load_test.py](perf/scripts/api_load_test.py) / [perf/scripts/harness_value.py](perf/scripts/harness_value.py) | 可复跑脚本 |
-| [perf/archive_20260906/](perf/archive_20260906/) | 对齐前旧版压测（工具本地化口径，仅作历史对照） |
 
 核心结论（对齐版）：裸 vLLM c8 十请求 2.3 秒（6101 tok/s），模型侧余量巨大；
 **瓶颈已彻底转移到外部工具链**（工具耗时为模型的 6~9 倍，GPU 均值仅 12~24%）；
@@ -56,7 +55,6 @@ Planner 原始规划全文面板。
 visit 页面经 deepseek-v4-flash 按 EXTRACTOR_PROMPT 提炼、火车/航班为训练同款 LLM
 模拟器（逐字 system prompt）、search/visit 训练文本格式、固定日期 2026-04-15、
 tagged 解析器容错（json_repair/变体/未闭合 answer）+ 训练原文引导消息。
-历史结果保留为 `data/*_unaligned.jsonl`（未对齐）/ `data/*_aligned1.jsonl`（第一轮对齐）。
 
 **深度对齐后结论与训练侧 80 条 judge 一致：RL-150 是最强本地模型** —— 混合分
 RL 0.480 > DeepSeek 0.461 > 基座 0.419 > SFT 0.223，judge 分 RL 0.60 > DeepSeek 0.57
@@ -70,7 +68,6 @@ RL 领先幅度进一步拉大，证实观测分布与票务模拟器对齐确�
 - 默认部署（worker=2）：8 用户排队均值 286s，42.6 任务/时
 - worker=16：**645 任务/时，排队 ~3s**，u16 档 16/16 完成
 - 吞吐 15×；上限仍由外部工具 API 决定（对齐版工具链含 LLM 模拟器往返）
-- 落地优化见 [../docs/concurrency-techniques.md](../docs/concurrency-techniques.md)
 
 ## 注意事项
 

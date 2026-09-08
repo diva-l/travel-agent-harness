@@ -1,15 +1,13 @@
-# Harness 工程指标压测报告（vLLM 模式 · 训练环境对齐版）
+# Harness 工程指标压测报告（vLLM 模式）
 
 2026-09-08 · RTX 5090 32GB · Voyager-4B（RL · Qwen3-4B bf16）· vLLM `--max-model-len 50000`
-测试集：与 RL 评测相同的 10 条样本（`../test_final.jsonl` 每隔 8 条，指纹 `b7d3c735…e0ef4303`）
+测试集：与 RL 评测相同的 10 条样本（`../data/test_final.jsonl` 每隔 8 条，指纹 `b7d3c735…e0ef4303`）
 工具链：高德 Web 服务 + Firecrawl（真实外部 API）+ **训练同款 LLM 车票/航班模拟器与 visit 提取器**（deepseek-v4-flash）。Report 阶段关闭。
 
-> 与 2026-09-06 旧版（[archive_20260906/perf_report.md](archive_20260906/perf_report.md)）的差异：
-> 本轮 harness 已全开训练对齐开关（强制收尾、重复循环检测+作答机会、观测截断 5000、
+> 口径说明：本轮 harness 已全开训练对齐开关（强制收尾、重复循环检测+作答机会、观测截断 5000、
 > EXTRACTOR_PROMPT、LLM 模拟器、训练文本格式、解析容错+引导消息、schema-echo 护栏）。
-> 其中模拟器/提取器每次调用都是一次真实 DeepSeek API 往返，**工具耗时因此显著高于旧版
-> （旧版车票/航班是本地确定性 fixture）**，两轮数字不可直接比吞吐，应按「旧版=工具本地化上限、
-> 新版=生产真实链路」对照阅读。
+> 其中模拟器/提取器每次调用都是一次真实 DeepSeek API 往返，工具耗时因此高于纯本地 fixture
+> 的场景，吞吐数字应按「生产真实链路」口径阅读。
 
 ## 一、吞吐量总览
 
