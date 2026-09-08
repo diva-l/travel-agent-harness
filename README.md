@@ -51,6 +51,8 @@
 
 ## 界面预览
 
+![运行演示（2 倍速）](docs/demo.webp)
+
 ![桌面端规划结果](docs/screenshots/desktop_full.png)
 
 更多截图见 [docs/screenshots/](docs/screenshots/)。
