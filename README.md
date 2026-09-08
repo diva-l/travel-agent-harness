@@ -327,6 +327,25 @@ TRAVEL_HARNESS_FIRECRAWL_KEY=<your-key>
 
 两个 provider 相互独立，可只开一个。真实数据源 + 训练对齐开关全开，即为[评测结果](#评测结果)的运行环境。
 
+### 6. 运行评测（可选）
+
+两档评测，按需选用。
+
+**快速校验**（CLI，内置用例）：检查模型有没有按预期调用必需工具：
+
+```bash
+travel-harness --env-file .env eval --cases evals/cases.jsonl
+```
+
+**完整对照评测**（[评测结果](#评测结果)那张表的生产方式）：测试数据用 [eval_results/data/test_final.jsonl](eval_results/data/test_final.jsonl) 的 10 条用例，先按第 5 步配好真实工具链（评 vLLM 模式还需全开训练对齐开关），逐条跑完后聚合成报告：
+
+```bash
+python eval_results/scripts/run_eval.py --mode api     # 或 vllm（需 Linux + GPU）
+python eval_results/scripts/summarize.py               # results_*.jsonl → report.md + summary.json
+```
+
+打分层是可插拔接口：默认输出全部 harness 层指标（完成率、工具覆盖率、轮次、token、耗时）；要加轨迹打分，实现一个 `score(messages) -> float` 后用 `--scorer your_scorer.py` 挂上即可（接口示例：[example_scorer.py](eval_results/scripts/example_scorer.py)）。
+
 ## 仓库结构
 
 ```text

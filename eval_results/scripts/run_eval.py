@@ -29,10 +29,10 @@ import time
 import types
 from pathlib import Path
 
-HARNESS_ROOT = Path("/root/autodl-tmp/TravelAgentHarness")
-REWARD_PLUGIN = Path(
-    "/root/autodl-tmp/travel_agentic_rl/ms-swift/examples/train/grpo/plugin/tooluse_reward_parser_aligned.py"
-)
+HARNESS_ROOT = Path(__file__).resolve().parents[2]
+# Training-side reward scorer (never shipped). Point TRAVEL_REWARD_PLUGIN at
+# tooluse_reward_parser_aligned.py from the training repo to enable it.
+REWARD_PLUGIN = Path(os.environ.get("TRAVEL_REWARD_PLUGIN", ""))
 TEST_SET = HARNESS_ROOT / "eval_results" / "data" / "test_final.jsonl"
 OUT_DIR = HARNESS_ROOT / "eval_results" / "data"
 
@@ -226,12 +226,14 @@ def main() -> None:
     args = parser.parse_args()
 
     OUT_DIR.mkdir(exist_ok=True)
-    load_env_file(HARNESS_ROOT / ".env")
+    env_file = HARNESS_ROOT / ".env"
+    if env_file.is_file():
+        load_env_file(env_file)
 
     planner_mode = args.mode
     overrides = {
         "planner_mode": planner_mode,
-        "db_path": Path(f"/root/autodl-tmp/eval-{planner_mode}.db"),
+        "db_path": OUT_DIR / f"eval-{planner_mode}.db",
         "report_enabled": False,  # eval scores the planner; report stage is separate
     }
     if planner_mode == "api":
