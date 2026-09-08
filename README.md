@@ -25,7 +25,7 @@
 1. **自己训练的规划模型**。Planner 不是调用商用大模型 API，而是基于 Qwen3-4B 经过 **SFT → Agentic RL（GRPO）** 后训练得到的 **TravelPlanner-4B**：SFT 阶段学习工具调用协议与格式，RL 阶段在真实工具循环里以过程奖励（schema 合规、工具效率、阶段感知、LLM judge 等六维子奖励）优化规划策略。
 2. **Harness 运行时约束**。模型不直接面对用户，而是运行在 Harness（运行时约束框架）内：预算上限、Schema 校验、Checkpoint、全量 Trace、人工审批、证据门禁全部由框架强制执行。模型的每一次工具调用都可回溯、可恢复、可从任一检查点分叉复跑。
 
-本仓库包含 **Harness 内核 + 评测体系 + 产品化前端**；训练代码与模型权重不在本仓库（见[模型权重](#模型权重)）。
+本仓库包含 **Harness 内核 + 评测体系 + 产品化前端**；训练代码与模型权重不在本仓库（模型接入见[快速开始](#快速开始)的模式 B）。
 
 ## 系统架构
 
@@ -163,12 +163,71 @@
 
 ## 快速开始
 
+### 1. 安装
+
 Python 3.11+：
 
 ```bash
 python -m venv .venv
 .venv/bin/pip install -r requirements.txt   # 或 pip install -e '.[test]'
 ```
+
+### 2. 选择 Planner 模式
+
+Planner（规划模型）有两种接入方式，由 `TRAVEL_HARNESS_PLANNER_MODE` 切换。两种模式共享同一套 Harness、工具链、Trace 与前端，区别只在模型从哪来、走什么协议。
+
+#### 模式 A：DeepSeek API（默认，无需 GPU）
+
+直接用托管的 DeepSeek 大模型当 Planner，走原生 Function Calling 协议。适合快速体验全链路、或作为评测参照组。
+
+`.env` 最小配置：
+
+```text
+TRAVEL_HARNESS_PLANNER_MODE=api          # 默认值，可省略
+TRAVEL_HARNESS_API_KEY=sk-你的-deepseek-key
+TRAVEL_HARNESS_BASE_URL=https://api.deepseek.com   # 默认值
+TRAVEL_HARNESS_MODEL=deepseek-v4-pro               # 默认值
+TRAVEL_HARNESS_MODEL_PROTOCOL=native               # 默认值
+```
+
+Report Model（把规划结果整理成路线 JSON）默认复用 Planner 的 key 和端点，无需额外配置。任何 OpenAI 兼容端点（不只 DeepSeek）都可以通过改 `BASE_URL` / `MODEL` 接入。
+
+#### 模式 B：本地 TravelPlanner-4B（vLLM，需 GPU）
+
+用自己训练的 RL 模型当 Planner，走训练时的 `<tool_call>` 文本协议。模型权重不进本仓库，放到 `models/checkpoint-150/`（Qwen3-4B，bf16）后，用 vLLM 暴露 OpenAI-compatible API：
+
+```bash
+python -m vllm.entrypoints.openai.api_server \
+  --model models/checkpoint-150 --served-model-name travel-planner \
+  --max-model-len 50000 --port 8000
+```
+
+RTX 5090 需加 `VLLM_USE_FLASHINFER_SAMPLER=0`（sm_120 兼容性），完整部署说明见 [docs/deploy-vllm-server.md](docs/deploy-vllm-server.md)。
+
+`.env` 最小配置：
+
+```text
+TRAVEL_HARNESS_PLANNER_MODE=vllm
+TRAVEL_HARNESS_REPORT_API_KEY=sk-你的-deepseek-key   # 见下方说明
+```
+
+`vllm` 预设会自动填入：tagged 协议、`http://127.0.0.1:8000/v1`、`travel-planner` 模型名、采样参数（temperature 0.2 / top_p 0.95 / top_k 50）、600s 墙钟与 300k Token 护栏，无需逐项配置；显式写的环境变量永远优先于预设。
+
+两点与模式 A 不同，需要注意：
+
+- **Report Model 不继承本地 Planner 的 key**。vllm 模式下 Report 阶段默认走托管 API（`deepseek-v4-flash`），必须显式设置 `TRAVEL_HARNESS_REPORT_API_KEY`；不想用托管 API 可设 `TRAVEL_HARNESS_REPORT_ENABLED=false` 关闭报告阶段。
+- **建议全开训练环境对齐开关**（见[训练环境对齐](#训练环境对齐)），让 RL 模型运行在训练分布内：
+
+```text
+TRAVEL_HARNESS_FORCE_ANSWER_AFTER_STEPS=12
+TRAVEL_HARNESS_REPEAT_ANSWER_CHANCE=true
+TRAVEL_HARNESS_MAX_TOOL_OUTPUT_CHARS=5000
+TRAVEL_HARNESS_VISIT_EXTRACTOR=true
+TRAVEL_HARNESS_TICKET_SIMULATOR=true
+TRAVEL_HARNESS_TRAINING_TOOL_FORMAT=true
+```
+
+### 3. 启动
 
 启动网页（默认只绑定本机；Demo 无鉴权，请勿暴露公网）：
 
@@ -183,49 +242,31 @@ python -m venv .venv
 .venv/bin/travel-harness --env-file .env run "明天从上海出发去杭州玩两天，2人，预算人均800元"
 ```
 
-常用命令：
+### 4. 常用命令
 
 ```bash
-travel-harness trace <task-id>          # 查看轨迹
-travel-harness checkpoints <task-id>    # 查看检查点
-travel-harness resume <task-id>         # 恢复任务
-travel-harness fork <task-id> --checkpoint 2
+travel-harness trace <task-id>          # 查看全量轨迹（模型轮次/工具调用/预算消耗）
+travel-harness checkpoints <task-id>    # 查看检查点列表
+travel-harness resume <task-id>         # 从中断处恢复任务
+travel-harness fork <task-id> --checkpoint 2   # 从第 2 个检查点分叉复跑
+travel-harness eval --cases evals/cases.jsonl  # 跑离线评测
 python -m unittest discover -s tests    # 84 个单测
 ```
 
 配置全部走 `.env`（[.env.example](.env.example) 有完整注释），读取优先级：命令行参数 > `TRAVEL_HARNESS_*` > `AGENT_*` > `OPENAI_*`。
 
-### 接入真实数据
+### 5. 接入真实数据（可选）
+
+默认工具数据源是离线演示 fixtures（不联网、确定性输出，测试用）。切换到真实数据源：
 
 ```text
-TRAVEL_HARNESS_TOOL_PROVIDER=amap        # 高德 Web 服务（地理四工具）
+TRAVEL_HARNESS_TOOL_PROVIDER=amap        # 高德 Web 服务（天气/POI/周边/路线四工具）
 TRAVEL_HARNESS_AMAP_KEY=<your-key>       # 「Web 服务」类型，勿提交仓库
-TRAVEL_HARNESS_SEARCH_PROVIDER=firecrawl # 真实网页检索
+TRAVEL_HARNESS_SEARCH_PROVIDER=firecrawl # 真实网页检索（search/visit）
 TRAVEL_HARNESS_FIRECRAWL_KEY=<your-key>
 ```
 
-### 模型权重
-
-训练权重不进本仓库。部署目录约定（打包归档中为空目录占位）：
-
-```text
-models/
-└── checkpoint-150/        # TravelPlanner-4B 最终权重（Qwen3-4B 基座，SFT + RL，bf16）
-```
-
-用 vLLM 暴露 OpenAI-compatible API（RTX 5090 需 `VLLM_USE_FLASHINFER_SAMPLER=0`，详见 [docs/deploy-vllm-server.md](docs/deploy-vllm-server.md)）：
-
-```bash
-python -m vllm.entrypoints.openai.api_server \
-  --model models/checkpoint-150 --served-model-name travel-planner \
-  --max-model-len 50000 --port 8000
-```
-
-```text
-TRAVEL_HARNESS_PLANNER_MODE=vllm    # 自动填入 tagged 协议、base_url、采样参数
-```
-
-无 GPU 时默认 `PLANNER_MODE=api` 直连 DeepSeek 等托管 API，同样可跑全链路。
+两个 provider 相互独立，可只开一个。真实数据源 + 训练对齐开关全开，即为[评测结果](#评测结果)的运行环境。
 
 ## 仓库结构
 
@@ -245,7 +286,7 @@ TRAVEL_HARNESS_PLANNER_MODE=vllm    # 自动填入 tagged 协议、base_url、�
 ├── evals/                      # CLI eval 固定用例
 ├── eval_results/               # 评测/压测脚本 + 全部结果与报告
 ├── docs/                       # 部署、验证、并发、证据台账等文档 + 截图
-├── models/                     # （打包为空）模型权重放置目录，见「模型权重」
+├── models/                     # （打包为空）模型权重放置目录，见快速开始模式 B
 ├── .env.example                # 全部配置项注释
 └── requirements.txt
 ```
