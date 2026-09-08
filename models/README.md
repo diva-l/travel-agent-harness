@@ -1,6 +1,6 @@
 # 模型权重放置目录
 
-训练权重不进 Git 仓库，也不进发布压缩包。权重托管在 Hugging Face，下载后放在这里：
+权重托管在 Hugging Face（[fantastic-youki/Voyager-4B](https://huggingface.co/fantastic-youki/Voyager-4B)），下载后放在这里：
 
 ```bash
 hf download fantastic-youki/Voyager-4B --local-dir models/Voyager-4B

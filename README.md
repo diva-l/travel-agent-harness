@@ -24,7 +24,7 @@
 1. **自己训练的规划模型**。Planner 不是调用商用大模型 API，而是基于 Qwen3-4B 经过 **SFT → Agentic RL（GRPO）** 后训练得到的 **Voyager-4B**：SFT 阶段学习工具调用协议与格式，RL 阶段在真实工具循环里以过程奖励（schema 合规、工具效率、阶段感知、LLM judge 等六维子奖励）优化规划策略。
 2. **Harness 运行时约束**。模型不直接面对用户，而是运行在 Harness（运行时约束框架）内：预算上限、Schema 校验、Checkpoint、全量 Trace、人工审批、证据门禁全部由框架强制执行。模型的每一次工具调用都可回溯、可恢复、可从任一检查点分叉复跑。
 
-本仓库包含 **Harness 内核 + 评测体系 + 产品化前端**；训练代码与模型权重不在本仓库（模型接入见[快速开始](#快速开始)的模式 B）。
+本仓库包含 **Harness 内核 + 评测体系 + 产品化前端**；模型权重托管在 Hugging Face（[fantastic-youki/Voyager-4B](https://huggingface.co/fantastic-youki/Voyager-4B)），下载与接入见[快速开始](#快速开始)的模式 B。
 
 ## 系统架构
 
@@ -330,7 +330,7 @@ TRAVEL_HARNESS_FIRECRAWL_KEY=<your-key>
 ├── evals/                      # CLI eval 固定用例
 ├── eval_results/               # 评测/压测：报告在顶层，scripts/ 为可复跑脚本，data/ 为逐条数据
 ├── docs/                       # 部署、验证、并发、证据台账等文档 + 截图
-├── models/                     # （打包为空）模型权重放置目录，见快速开始模式 B
+├── models/                     # 模型权重放置目录，见快速开始模式 B
 ├── .env.example                # 全部配置项注释
 └── requirements.txt
 ```
