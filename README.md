@@ -232,7 +232,13 @@ Report Model（把规划结果整理成路线 JSON）默认复用 Planner 的 ke
 
 #### 模式 B：本地 Voyager-4B（vLLM，仅 Linux + GPU）
 
-用自己训练的 RL 模型当 Planner，走训练时的 `<tool_call>` 文本协议。模型权重不进本仓库，放到 `models/Voyager-4B/`（Qwen3-4B，bf16）后，用 vLLM 暴露 OpenAI-compatible API：
+用自己训练的 RL 模型当 Planner，走训练时的 `<tool_call>` 文本协议。权重托管在 Hugging Face，下载到 `models/Voyager-4B/`：
+
+```bash
+hf download fantastic-youki/Voyager-4B --local-dir models/Voyager-4B
+```
+
+然后用 vLLM 暴露 OpenAI-compatible API：
 
 ```bash
 python -m vllm.entrypoints.openai.api_server \
