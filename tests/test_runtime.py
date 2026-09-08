@@ -157,15 +157,16 @@ class RuntimeTests(unittest.TestCase):
             harness = build_default_harness(
                 config_for(Path(folder) / "test.db"),
                 model=model,
-                tools=self._slow_registry(delay=0.3),
+                tools=self._slow_registry(delay=0.5),
             )
             started = time.monotonic()
             state = harness.run("并行测试")
             elapsed = time.monotonic() - started
             self.assertEqual(TaskStatus.COMPLETED, state.status)
             self.assertEqual(2, state.successful_tool_calls)
-            # 0.3s + 0.3s sequential would be >= 0.6s; parallel should land well under.
-            self.assertLess(elapsed, 0.55)
+            # Sequential would be >= 1.0s; parallel lands near 0.5s. The 0.85s
+            # bound keeps a wide margin for loaded CI runners.
+            self.assertLess(elapsed, 0.85)
             tool_messages = [m for m in state.messages if m["role"] == "tool"]
             self.assertEqual(["call-a", "call-b"], [m["tool_call_id"] for m in tool_messages])
             self.assertIn('"A"', tool_messages[0]["content"])
