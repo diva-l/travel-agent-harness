@@ -25,14 +25,14 @@ from pathlib import Path
 
 import sys
 
-HARNESS_ROOT = Path("/root/autodl-tmp/TravelAgentHarness")
+HARNESS_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(HARNESS_ROOT / "src"))
 
 from travel_agent_harness.config import HarnessConfig, load_env_file  # noqa: E402
 from travel_agent_harness.harness import build_default_harness  # noqa: E402
 from travel_agent_harness.prompts import build_planner_system_prompt  # noqa: E402
 
-OUT = Path("/root/autodl-tmp/TravelAgentHarness/eval_results/perf/data")
+OUT = Path(__file__).resolve().parents[1] / "data"
 OUT.mkdir(parents=True, exist_ok=True)
 VLLM = "http://127.0.0.1:8000"
 
@@ -114,7 +114,7 @@ def time_breakdown(db_path: Path) -> dict[str, float]:
 
 
 def run_tier(tier: dict, cases: list[dict]) -> dict:
-    db_path = Path(f"/root/autodl-tmp/eval-perf-{tier['name']}.db")
+    db_path = OUT / f"eval-perf-{tier['name']}.db"
     db_path.unlink(missing_ok=True)
     config = HarnessConfig.from_env(
         planner_mode="vllm",
@@ -183,11 +183,11 @@ def run_tier(tier: dict, cases: list[dict]) -> dict:
 def run_bare(cases: list[dict], concurrency: int = 8) -> dict:
     """First-round requests straight to vLLM — model-only ceiling, no harness."""
     tools_schema = build_default_harness(
-        HarnessConfig.from_env(planner_mode="vllm", db_path=Path("/root/autodl-tmp/eval-perf-bare.db"),
+        HarnessConfig.from_env(planner_mode="vllm", db_path=OUT / "eval-perf-bare.db",
                                report_enabled=False)
     ).runtime.tools.api_schemas()
     system_prompt = build_planner_system_prompt(protocol="tagged", max_tool_rounds=13, tools=tools_schema)
-    Path("/root/autodl-tmp/eval-perf-bare.db").unlink(missing_ok=True)
+    (OUT / "eval-perf-bare.db").unlink(missing_ok=True)
 
     def work(case: dict) -> dict:
         payload = {

@@ -11,8 +11,9 @@ import json
 import sqlite3
 from pathlib import Path
 
-OUT = Path("/root/autodl-tmp/TravelAgentHarness/eval_results/perf/data")
+OUT = Path(__file__).resolve().parents[1] / "data"
 OUT.mkdir(parents=True, exist_ok=True)
+EVAL_DATA = Path(__file__).resolve().parents[2] / "data"
 
 
 def stats_for(db_path: str) -> dict:
@@ -61,8 +62,8 @@ def stats_for(db_path: str) -> dict:
 
 
 result = {
-    "vllm": stats_for("/root/autodl-tmp/eval-vllm.db"),
-    "api": stats_for("/root/autodl-tmp/eval-api.db"),
+    "vllm": stats_for(str(EVAL_DATA / "eval-vllm.db")),
+    "api": stats_for(str(EVAL_DATA / "eval-api.db")),
     "interpretation": {
         "repeat_call_blocks": "没有 harness：这些重复调用会真实打到外部 API，浪费配额且把上下文灌满重复观测",
         "validation_rejections": "没有 harness：非法参数直接发往高德/Firecrawl，产生 4xx 与不可解析的报错文本",
