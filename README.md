@@ -211,7 +211,13 @@ pip install -e '.[test]'
 
 ### 2. 选择 Planner 模式
 
-Planner（规划模型）有两种接入方式，由 `TRAVEL_HARNESS_PLANNER_MODE` 切换。两种模式共享同一套 Harness、工具链、Trace 与前端，区别只在模型从哪来、走什么协议。
+**推荐先跑装机向导**：它会识别你的操作系统，只列出本机实际可运行的模式（Windows 只提供 api；Linux 提供 api / vllm 两种），交互式问完必需的 key 后直接生成可用的 `.env`，不给配置出错的机会：
+
+```bash
+travel-harness setup          # 生成 .env（Windows 下激活 venv 后直接可用）
+```
+
+也可以手动配置——Planner（规划模型）有两种接入方式，由 `TRAVEL_HARNESS_PLANNER_MODE` 切换。两种模式共享同一套 Harness、工具链、Trace 与前端，区别只在模型从哪来、走什么协议。
 
 **平台支持**：模式 A 全平台可用（Windows / Linux / macOS，无需 GPU）；模式 B 仅 Linux + NVIDIA GPU（vLLM 没有原生 Windows 版本——在 Windows 上配置 `PLANNER_MODE=vllm` 会在启动时直接报错并提示切回 api 模式，而不是等到模型调用时才连接失败）。
 
@@ -289,7 +295,7 @@ travel-harness checkpoints <task-id>    # 查看检查点列表
 travel-harness resume <task-id>         # 从中断处恢复任务
 travel-harness fork <task-id> --checkpoint 2   # 从第 2 个检查点分叉复跑
 travel-harness eval --cases evals/cases.jsonl  # 跑离线评测
-python -m unittest discover -s tests    # 87 个单测
+python -m unittest discover -s tests    # 91 个单测
 ```
 
 配置全部走 `.env`（[.env.example](.env.example) 有完整注释），读取优先级：命令行参数 > `TRAVEL_HARNESS_*` > `AGENT_*` > `OPENAI_*`。
@@ -321,7 +327,7 @@ TRAVEL_HARNESS_FIRECRAWL_KEY=<your-key>
 │   ├── api/                    #   FastAPI 服务（任务、SSE、审批、Inspector）
 │   └── web_dist/               #   前端构建产物（pip 用户无需 Node）
 ├── frontend/                   # Vue 3 + Vite + TypeScript 源码（改前端才需要 Node）
-├── tests/                      # 87 个单元测试（unittest，无外部依赖）
+├── tests/                      # 91 个单元测试（unittest，无外部依赖）
 ├── evals/                      # CLI eval 固定用例
 ├── eval_results/               # 评测/压测：报告在顶层，scripts/ 为可复跑脚本，data/ 为逐条数据
 ├── docs/                       # 部署、验证、并发、证据台账等文档 + 截图

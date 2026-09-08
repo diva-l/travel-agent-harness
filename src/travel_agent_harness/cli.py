@@ -78,6 +78,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--cases",
         default=str(Path(__file__).resolve().parents[2] / "evals" / "cases.jsonl"),
     )
+    setup_parser = subparsers.add_parser(
+        "setup", help="interactive first-run wizard: detect OS, pick a planner mode, write .env"
+    )
+    setup_parser.add_argument("--output", default=".env", help="env file to write")
     serve_parser = subparsers.add_parser("serve", help="run the Travel Agent web application")
     serve_parser.add_argument("--host", default="127.0.0.1")
     serve_parser.add_argument("--port", type=int, default=8765)
@@ -90,6 +94,13 @@ def main(argv: list[str] | None = None) -> None:
     if hasattr(sys.stderr, "reconfigure"):
         sys.stderr.reconfigure(encoding="utf-8")
     args = build_parser().parse_args(argv)
+    if args.command == "setup":
+        # Runs before any config validation: the whole point is to create a
+        # valid .env for someone who does not have one yet.
+        from .setup_wizard import run_setup
+
+        run_setup(args.output)
+        return
     load_env_file(args.env_file)
     overrides: dict[str, object] = {}
     if args.db:
