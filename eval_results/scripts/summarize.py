@@ -56,7 +56,6 @@ def main() -> None:
 
     lines = ["# 评测报告：Voyager-4B vs DeepSeek（同一 Harness、同一真实工具链）", ""]
     lines.append("- 测试集：`data/test_final.jsonl` 10 条用例（精选自训练侧 80 条测试集）")
-    lines.append("- 数据集指纹（sha256）：`b7d3c735c13f92328aa0bf246d0649e4a1f8cfac6fcc187281775622e0ef4303`")
     lines.append("- 工具链：高德 Web 服务（真实） + Firecrawl（真实检索）")
     lines.append("- 分数：训练侧过程奖励混合分（训练同款评测代码复算）+ LLM judge（deepseek-v4-flash，对照测试集 gold answer）")
     lines.append("")

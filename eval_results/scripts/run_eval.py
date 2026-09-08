@@ -19,7 +19,6 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import hashlib
 import importlib.util
 import json
 import os
@@ -53,15 +52,6 @@ def load_cases(limit: int = 10) -> list[dict]:
     rows.sort(key=lambda r: r["id"])
     step = max(1, len(rows) // limit)
     return [rows[i] for i in range(0, len(rows), step)][:limit]
-
-
-def fingerprint(cases: list[dict]) -> str:
-    canon = lambda v: json.dumps(v, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-    h = hashlib.sha256()
-    for r in sorted(cases, key=lambda x: x["id"]):
-        h.update(canon(r).encode())
-        h.update(b"\n")
-    return h.hexdigest()
 
 
 def case_query(case: dict) -> str:
@@ -244,7 +234,6 @@ def main() -> None:
     harness = build_default_harness(config)
 
     cases = load_cases(args.limit)
-    fp = fingerprint(cases)
     gold_path = OUT_DIR / "gold_selected.jsonl"
     with open(gold_path, "w", encoding="utf-8") as f:
         for case in cases:
@@ -328,7 +317,7 @@ def main() -> None:
             print(f"  -> {hm['status']} steps={hm['steps']} tools={hm['tool_calls']} "
                   f"tokens={hm['total_tokens']} mixed={mixed}", flush=True)
 
-    print(json.dumps({"mode": planner_mode, "dataset_fingerprint": fp,
+    print(json.dumps({"mode": planner_mode,
                       "scorer": scorer_name,
                       "results": str(results_path)}, ensure_ascii=False))
 

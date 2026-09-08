@@ -3,8 +3,7 @@
 本目录汇集 TravelAgentHarness 的评测产物：模型质量对照（Voyager-4B vs DeepSeek，
 同一 Harness + 同一真实工具链）与工程压测。目录约定：报告在顶层，可复跑脚本在
 [scripts/](scripts/)，原始数据在 [data/](data/)。测试集：
-[data/test_final.jsonl](data/test_final.jsonl) 10 条用例（精选自训练侧 80 条测试集，按 id 排序每隔 8 条确定性抽样），
-数据集指纹 sha256 `b7d3c735c13f92328aa0bf246d0649e4a1f8cfac6fcc187281775622e0ef4303`。
+[data/test_final.jsonl](data/test_final.jsonl) 10 条用例（精选自训练侧 80 条测试集，按 id 排序每隔 8 条确定性抽样）。
 工具链均为真实外部 API（高德 Web 服务 + Firecrawl）。
 
 ## 一、模型质量对照（Voyager-4B vs DeepSeek）
