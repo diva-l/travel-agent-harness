@@ -12,8 +12,7 @@
   <a href="#系统架构">系统架构</a> ·
   <a href="#harness-设计详解">Harness 设计</a> ·
   <a href="#评测结果">评测结果</a> ·
-  <a href="#快速开始">快速开始</a> ·
-  <a href="#文档索引">文档</a>
+  <a href="#快速开始">快速开始</a>
 </p>
 
 ## 项目简介
@@ -329,17 +328,6 @@ TRAVEL_HARNESS_FIRECRAWL_KEY=<your-key>
 ├── .env.example                # 全部配置项注释
 └── requirements.txt
 ```
-
-## 文档索引
-
-| 文档 | 内容 |
-|---|---|
-| [docs/deploy-vllm-server.md](docs/deploy-vllm-server.md) | vLLM 部署与接入 |
-| [docs/concurrency-techniques.md](docs/concurrency-techniques.md) | 并发优化调研与落地映射 |
-| [docs/evidence-ledger.md](docs/evidence-ledger.md) | 可公开边界与 Claim 证据 |
-| [docs/verification.md](docs/verification.md) | 三次真实运行的验证记录 |
-| [docs/2026-09-07-overnight-summary.md](docs/2026-09-07-overnight-summary.md) | 训练对齐改造全程记录 |
-| [eval_results/README.md](eval_results/README.md) | 评测产物总索引 |
 
 ## 安全说明
 
